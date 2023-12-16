@@ -1,0 +1,30 @@
+version: "3.8"
+services:
+    backend:
+        build: ./backend
+        ports:
+            - 1323:1323
+#        environment:
+#            DB_PATH :
+#        depends_on:
+#            - database
+            
+    frontend:
+        build: ./frontend
+        ports:
+            - 5173:5173
+        depends_on:
+            - backend
+        
+            
+#    database:
+#        image: sqlite:latest
+#        ports:
+#          - 5432:5432
+#        volumes:
+#          - sqlite-data:/processes
+      
+#volumes:
+#  sqlite-data:
+
+        

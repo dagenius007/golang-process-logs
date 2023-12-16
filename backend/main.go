@@ -2,23 +2,26 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"os"
+	"net/http"
+	"runtime"
 
-	"github.com/joho/godotenv"
+	"binalyze-test/configs"
+	"binalyze-test/routes"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
-	_err := godotenv.Load(".env")
+	// _err := godotenv.Load(".env")
 
-	if _err != nil {
-		log.Print(_err)
-	}
+	// if _err != nil {
+	// 	log.Print(_err)
+	// }
 
-	// configs.ConnectDb()
-	// configs.ConnectRedis()
+	fmt.Println("v", runtime.GOOS)
+
+	configs.ConnectDb()
 
 	e := echo.New()
 
@@ -27,16 +30,20 @@ func main() {
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 
-	// e.GET("/", func(c echo.Context) error {
-	// 	return c.String(http.StatusOK, "Welcome !")
-	// })
+	e.GET("/", func(c echo.Context) error {
+		return c.String(http.StatusOK, "Welcome !")
+	})
 
-	// group := e.Group("/api/v1")
+	group := e.Group("/api/v1")
 
-	// routes.Routes(group)
+	routes.Routes(group)
 
-	port := fmt.Sprintf(":%s", os.Getenv("PORT"))
+	RunSchedule()
+
+	port := fmt.Sprintf(":%s", "1323")
 
 	// Start server
 	e.Logger.Fatal(e.Start(port))
+
+	select {}
 }
