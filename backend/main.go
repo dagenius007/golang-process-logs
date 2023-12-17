@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"runtime"
 
-	"binalyze-test/configs"
 	"binalyze-test/routes"
 
 	"github.com/labstack/echo/v4"
@@ -21,7 +20,7 @@ func main() {
 
 	fmt.Println("v", runtime.GOOS)
 
-	configs.ConnectDb()
+	// configs.ConnectDb()
 
 	e := echo.New()
 
@@ -39,6 +38,8 @@ func main() {
 	routes.Routes(group)
 
 	RunSchedule()
+
+	fmt.Println("hluuuu")
 
 	port := fmt.Sprintf(":%s", "1323")
 

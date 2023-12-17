@@ -12,7 +12,7 @@ func RunSchedule() {
 	fmt.Println("Fetching Process")
 	s := cron.New()
 
-	s.AddFunc("@every 30s", func() {
+	s.AddFunc("@every 10s", func() {
 		fmt.Println("Fetching Process")
 		handlers.FetchAndInsertProcess()
 	})

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"binalyze-test/configs"
 	"binalyze-test/processes"
@@ -23,32 +22,34 @@ func FetchAndInsertProcess() {
 		return
 	}
 
-	sqlStr := "INSERT INTO processes (user, pid , cpuUsage , memoryPercentageUsage , virtualMemorySize , residentMemorySize , tty , state , started , totalTime , command , createdAt , updatedAt) VALUES "
+	fmt.Println("processlist", processLists)
 
-	upsertStatement := " ON CONFLICT (pid) DO UPDATE SET cpuUsage=excluded.cpuUsage , memoryPercentageUsage=excluded.memoryPercentageUsage , virtualMemorySize=excluded.virtualMemorySize , residentMemorySize=excluded.residentMemorySize, state=excluded.state , totalTime=excluded.totalTime, updatedAt=excluded.updatedAt ;"
-	vals := []interface{}{}
+	// sqlStr := "INSERT INTO processes (user, pid , cpuUsage , memoryPercentageUsage , virtualMemorySize , residentMemorySize , tty , state , started , totalTime , command , createdAt , updatedAt) VALUES "
 
-	// map ages
-	for _, processList := range processLists {
+	// upsertStatement := " ON CONFLICT (pid) DO UPDATE SET cpuUsage=excluded.cpuUsage , memoryPercentageUsage=excluded.memoryPercentageUsage , virtualMemorySize=excluded.virtualMemorySize , residentMemorySize=excluded.residentMemorySize, state=excluded.state , totalTime=excluded.totalTime, updatedAt=excluded.updatedAt ;"
+	// vals := []interface{}{}
 
-		// fmt.Println("Process : ", processList.PID, processList.TotalTime)
+	// // map ages
+	// for _, processList := range processLists {
 
-		sqlStr += "(?, ? , ? , ? ,?, ? , ? , ? , ? , ? , ? , ? , ?),"
-		vals = append(vals, processList.User, processList.PID, processList.CpuUsage, processList.MemoryPercentageUsage, processList.VirtualMemorySize, processList.ResidentMemorySize, processList.Tty, processList.State, processList.Started, processList.TotalTime, processList.Command, time.Now(), time.Now())
-	}
+	// 	// fmt.Println("Process : ", processList.PID, processList.TotalTime)
 
-	// trim the last ,
-	sqlStr = sqlStr[0 : len(sqlStr)-1]
+	// 	sqlStr += "(?, ? , ? , ? ,?, ? , ? , ? , ? , ? , ? , ? , ?),"
+	// 	vals = append(vals, processList.User, processList.PID, processList.CpuUsage, processList.MemoryPercentageUsage, processList.VirtualMemorySize, processList.ResidentMemorySize, processList.Tty, processList.State, processList.TotalTime, processList.Command, time.Now(), time.Now())
+	// }
 
-	sqlStr = sqlStr + upsertStatement
-	// // prepare the statement
-	// // stmt, _ := configs.Db.Prepare(sqlStr)
+	// // trim the last ,
+	// sqlStr = sqlStr[0 : len(sqlStr)-1]
 
-	// // format all vals at once
-	_, err = configs.Db.Exec(sqlStr, vals...)
-	if err != nil {
-		fmt.Println("err:", err)
-	}
+	// sqlStr = sqlStr + upsertStatement
+	// // // prepare the statement
+	// // // stmt, _ := configs.Db.Prepare(sqlStr)
+
+	// // // format all vals at once
+	// // _, err = configs.Db.Exec(sqlStr, vals...)
+	// if err != nil {
+	// 	fmt.Println("err:", err)
+	// }
 
 	fmt.Println("Insertion sucessful")
 }
@@ -63,7 +64,7 @@ func fetchDbProcess() ([]Process, error) {
 
 	for rows.Next() {
 		i := Process{}
-		err = rows.Scan(&i.ID, &i.User, &i.PID, &i.CpuUsage, &i.MemoryPercentageUsage, &i.VirtualMemorySize, &i.ResidentMemorySize, &i.Tty, &i.State, &i.Started, &i.TotalTime, &i.Command, &i.CreatedAt, &i.UpdatedAt)
+		err = rows.Scan(&i.ID, &i.User, &i.PID, &i.CpuUsage, &i.MemoryPercentageUsage, &i.VirtualMemorySize, &i.ResidentMemorySize, &i.Tty, &i.State, &i.Application, &i.TotalTime, &i.Command, &i.CreatedAt, &i.UpdatedAt)
 		if err != nil {
 			return data, err
 		}

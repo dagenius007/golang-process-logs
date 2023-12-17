@@ -6,10 +6,6 @@ RUN apk update
 
 RUN apk add --update gcc musl-dev
 
-# RUN apk add --update gcc
-
-# RUN apk add build-essential libsqlite3-dev
-
 COPY . .
 
 ENV CGO_ENABLED=1 
@@ -20,9 +16,12 @@ RUN go get -d ./...
 
 RUN CGO_ENABLED=1 
 
-RUN go install -tags=linux ./...
+RUN GOOS=linux go install ./...
 
-RUN go build -tags=linux
+# RUN GOOS=linux go build -tags=linux,darwin,window
+
+RUN GOOS=linux go build
+
 
 # Unit tests
 # RUN CGO_ENABLED=0 go test -v

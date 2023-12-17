@@ -12,9 +12,9 @@ type Process struct {
 	ResidentMemorySize    int64     `json:"residentMemorySize"`
 	Tty                   string    `json:"tty"`
 	State                 string    `json:"state"`
-	Started               string    `json:"started"`
 	TotalTime             string    `json:"totalTime"`
 	Command               string    `json:"command"`
+	Application           string    `json:"application"`
 	CreatedAt             time.Time `json:"createdAt"`
 	UpdatedAt             time.Time `json:"updatedAt"`
 }
