@@ -6,7 +6,11 @@ import InputComponent from '@/components/input/InputComponent.vue'
 import SelectComponent from '@/components/select/SelectComponent.vue'
 import { FunnelIcon } from '@heroicons/vue/24/outline'
 
-const data: any[] = ref([
+interface IPerson {
+  firstName: string
+  lastName: string
+}
+const data = ref<IPerson[]>([
   {
     firstName: 'tanner',
     lastName: 'linsley'

@@ -6,15 +6,15 @@ type Process struct {
 	ID                    int       `json:"id"`
 	User                  string    `json:"user"`
 	PID                   int32     `json:"pid"`
-	CpuUsage              float32   `json:"cpuUsage"`
-	MemoryPercentageUsage float32   `json:"memoryPercentageUsage"`
-	VirtualMemorySize     int64     `json:"virtualMemorySize"`
+	CpuUsage              float64   `json:"cpuUsage"`
+	MemoryPercentageUsage float64   `json:"memoryPercentageUsage"`
 	ResidentMemorySize    int64     `json:"residentMemorySize"`
-	Tty                   string    `json:"tty"`
+	VirtualMemorySize     int64     `json:"virtualMemorySize"`
 	State                 string    `json:"state"`
 	TotalTime             string    `json:"totalTime"`
+	CpuTime               string    `json:"cpuTime"`
 	Command               string    `json:"command"`
-	Application           string    `json:"application"`
+	Priority              string    `json:"priority"`
 	CreatedAt             time.Time `json:"createdAt"`
 	UpdatedAt             time.Time `json:"updatedAt"`
 }

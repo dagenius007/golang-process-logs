@@ -61,7 +61,6 @@ interface OptionProps {
 
 interface SelectProps {
   customStyles?: Record<string, string>
-  value: string
   modelValue: string | number
   options: OptionProps[]
 }
@@ -70,8 +69,10 @@ const props = defineProps<SelectProps>()
 
 const emit = defineEmits(['update:modelValue'])
 
-const updateValue = (event) => {
-  emit('update:modelValue', event.target.value)
+const updateValue = (event: Event) => {
+  if (event && event.target) {
+    emit('update:modelValue', (event.target as HTMLInputElement).value)
+  }
 }
 </script>
 
@@ -83,7 +84,7 @@ const updateValue = (event) => {
     <select
       class="SelectField"
       placeholder="Sélectionnez un diplôme"
-      :value="value"
+      :value="modelValue"
       @change="updateValue"
       expanded
     >

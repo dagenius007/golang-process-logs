@@ -10,7 +10,7 @@ interface ColumnProps {
 interface TableProps {
   columns: ColumnProps[]
   rows: Record<string, any>[]
-  isLoading?: boolean
+  isLoading: boolean
   testId?: string
 }
 
