@@ -2,25 +2,25 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
-	"runtime"
 
+	"binalyze-test/configs"
 	"binalyze-test/routes"
 
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
-	// _err := godotenv.Load(".env")
+	_err := godotenv.Load(".env")
 
-	// if _err != nil {
-	// 	log.Print(_err)
-	// }
+	if _err != nil {
+		log.Print(_err)
+	}
 
-	fmt.Println("v", runtime.GOOS)
-
-	// configs.ConnectDb()
+	configs.ConnectDb()
 
 	e := echo.New()
 
