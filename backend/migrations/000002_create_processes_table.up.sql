@@ -1,16 +1,23 @@
+BEGIN;
+
 CREATE TABLE IF NOT EXISTS processes (
     id INTEGER NOT NULL PRIMARY KEY,
     user text,
     pid integer NOT NULL UNIQUE,
     cpuUsage integer,
-    memoryPercentageUsage integer,
-    virtualMemorySize integer,
+    memoryUsage integer,
     residentMemorySize integer,
-    tty text,
+    virtualMemorySize integer,
     state text,
-    started text
     totalTime text,
+    cpuTime text,
     command text,
+    priority text,
     createdAt timestamp,
     updatedAt timestamp
 );
+
+CREATE INDEX idx_user ON user (processes);
+CREATE INDEX idx_state ON state (processes);
+
+COMMIT;

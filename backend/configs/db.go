@@ -8,7 +8,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var Db sql.DB
+var Db *sql.DB
 
 const PATH = "../db/processes.db"
 
@@ -53,26 +53,35 @@ func ConnectDb() {
 
 	// Run migrations
 
-	Db = *db
+	Db = db
 
 	Db.Exec("DROP table processes")
 
-	_, derr := Db.Exec(`CREATE TABLE IF NOT EXISTS processes (
+	_, derr := Db.Exec(`
+	BEGIN;
+
+	CREATE TABLE IF NOT EXISTS processes (
 		id INTEGER NOT NULL PRIMARY KEY,
 		user text,
 		pid integer NOT NULL UNIQUE,
 		cpuUsage integer,
-		memoryPercentageUsage integer,
-		virtualMemorySize integer,
+		memoryUsage integer,
 		residentMemorySize integer,
-		tty text,
+		virtualMemorySize integer,
 		state text,
-		started text,
 		totalTime text,
+		cpuTime text,
 		command text,
+		priority text,
 		createdAt timestamp,
 		updatedAt timestamp
-	);`)
+	);
+	
+	CREATE INDEX idx_user ON user (processes);
+	CREATE INDEX idx_state ON state (processes);
+	
+	COMMIT;
+	`)
 
 	if derr != nil {
 		fmt.Println("derr", derr)

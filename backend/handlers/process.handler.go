@@ -4,84 +4,126 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
+	"time"
 
 	"binalyze-test/configs"
-	"binalyze-test/processes"
+	processHandler "binalyze-test/process"
 	. "binalyze-test/types"
 
 	"github.com/labstack/echo/v4"
 	"golang.org/x/net/websocket"
 )
 
-func insertManyProcessQuery(processLists []Process) error {
-	sqlStr := "INSERT INTO processes (user, pid , cpuUsage , memoryPercentageUsage , virtualMemorySize , residentMemorySize , tty , state , started , totalTime , command , createdAt , updatedAt) VALUES "
+func insertManyProcessQuery(processes []Process) error {
+	sqlStr := "INSERT INTO processes (user, pid , cpuUsage , memoryUsage , residentMemorySize,  virtualMemorySize , state , totalTime , cpuTime , command , priority, createdAt , updatedAt) VALUES "
 
-	upsertStatement := " ON CONFLICT (pid) DO UPDATE SET cpuUsage=excluded.cpuUsage , memoryPercentageUsage=excluded.memoryPercentageUsage , virtualMemorySize=excluded.virtualMemorySize , residentMemorySize=excluded.residentMemorySize, state=excluded.state , totalTime=excluded.totalTime, updatedAt=excluded.updatedAt ;"
-	// val := []interface{}{}
+	upsertStatement := " ON CONFLICT (pid) DO UPDATE SET cpuUsage=excluded.cpuUsage , memoryUsage=excluded.memoryUsage , residentMemorySize=excluded.residentMemorySize, virtualMemorySize=excluded.virtualMemorySize , state=excluded.state , totalTime=excluded.totalTime,  cpuTime=excluded.cpuTime,  priority=excluded.priority, updatedAt=excluded.updatedAt ;"
+	vals := []interface{}{}
 
-	// for _, processList := range processLists {
+	for _, process := range processes {
 
-	// 	// fmt.Println("Process : ", processList.PID, processList.TotalTime)
-
-	// 	sqlStr += "(?, ? , ? , ? ,?, ? , ? , ? , ? , ? , ? , ? , ?),"
-	// 	vals = append(vals, processList.User, processList.PID, processList.CpuUsage, processList.MemoryPercentageUsage, processList.VirtualMemorySize, processList.ResidentMemorySize, processList.Tty, processList.State, processList.TotalTime, processList.Command, time.Now(), time.Now())
-	// }
+		sqlStr += "(?, ? , ? , ? ,?, ? , ? , ? , ? , ? , ? , ? , ?),"
+		vals = append(vals, process.User, process.PID, process.CpuUsage, process.MemoryUsage, process.ResidentMemorySize, process.VirtualMemorySize, process.State, process.TotalTime, process.CpuTime, process.Command, process.Priority, time.Now(), time.Now())
+	}
 
 	// trim the last ,
 	sqlStr = sqlStr[0 : len(sqlStr)-1]
 
-	sqlStr = sqlStr + upsertStatement
-	// prepare the statement
-	// stmt, _ := configs.Db.Prepare(sqlStr)
+	// concatenate upsert statement
+	sqlStr += upsertStatement
 
 	// format all vals at once
-	// _, err = configs.Db.Exec(sqlStr, vals...)
-	// if err != nil {
-	// 	fmt.Println("err:", err)
-	// }
+	_, err := configs.Db.Exec(sqlStr, vals...)
+	if err != nil {
+		fmt.Println("err", err)
+		return err
+	}
 	return nil
 }
 
 func FetchAndInsertProcess() {
-	// processLists, err := ps.Processes()
-	processLists := processes.GetProcesses()
+	processes := processHandler.GetProcesses()
 
-	fmt.Println("processlist", processLists)
-	v, _ := json.Marshal(&processLists)
-
-	fmt.Println("Insertion sucessful", string(v))
-}
-
-func selectProcessesQuery() ([]Process, error) {
-	rows, err := configs.Db.Query("SELECT * FROM processes")
-	data := []Process{}
-
+	err := insertManyProcessQuery(processes)
 	if err != nil {
-		return data, err
+		// log errror
+		fmt.Println("err", err)
 	}
 
-	// for rows.Next() {
-	// 	i := Process{}
-	// 	err = rows.Scan(&i.ID, &i.User, &i.PID, &i.CpuUsage, &i.MemoryPercentageUsage, &i.VirtualMemorySize, &i.ResidentMemorySize, &i.Tty, &i.State, &i.Application, &i.TotalTime, &i.Command, &i.CreatedAt, &i.UpdatedAt)
-	// 	if err != nil {
-	// 		return data, err
-	// 	}
-	// 	data = append(data, i)
-	// }
+	fmt.Println("got here")
+}
 
-	defer rows.Close()
+func selectProcessesQuery(query string) ([]Process, error) {
+	processes := []Process{}
 
-	return data, nil
+	rows, err := configs.Db.Query(query)
+	if err != nil {
+		return processes, err
+	}
+
+	for rows.Next() {
+		fmt.Println("row", rows)
+		i := Process{}
+		err = rows.Scan(&i.ID, &i.User, &i.PID, &i.CpuUsage, &i.MemoryUsage, &i.VirtualMemorySize, &i.ResidentMemorySize, &i.State, &i.TotalTime, &i.CpuTime, &i.Command, &i.Priority, &i.CreatedAt, &i.UpdatedAt)
+		if err != nil {
+			return processes, err
+		}
+		processes = append(processes, i)
+	}
+
+	// defer rows.Close()
+
+	return processes, nil
+}
+
+func buildQuery(params url.Values) string {
+	query := "SELECT * FROM processes"
+	whereQuery := ""
+	// build query based on params
+	page, limit := 1, 10
+
+	if params.Has("state") {
+		whereQuery = fmt.Sprintf("%s state = %s AND", whereQuery, params.Get("state"))
+	}
+
+	if params.Has("user") {
+		whereQuery = fmt.Sprintf("%s user = %s AND", whereQuery, params.Get("user"))
+	}
+
+	if len(whereQuery) > 0 {
+		// find last AND and remove
+		lastAndIndex := strings.LastIndex(query, "AND")
+		whereQuery = whereQuery[:lastAndIndex]
+
+		whereQuery = "WHERE" + whereQuery + " "
+	}
+
+	if val, err := strconv.Atoi(params.Get("page")); err == nil {
+		page = val
+	}
+
+	if val, err := strconv.Atoi(params.Get("limit")); err == nil {
+		limit = val
+	}
+
+	offset := (page - 1) * limit
+
+	query = fmt.Sprintf("%s %sLIMIT %d OFFSET %d", query, whereQuery, limit, offset)
+
+	return query
 }
 
 func GetProcess(c echo.Context) error {
-	// limit := c.Param("limit")
+	query := buildQuery(c.QueryParams())
 
-	data, err := selectProcessesQuery()
+	processes, err := selectProcessesQuery(query)
 	if err != nil {
 		fmt.Println("err", err)
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"data":    data,
+			"data":    processes,
 			"success": false,
 			"message": "Operation not successful",
 		})
@@ -89,14 +131,14 @@ func GetProcess(c echo.Context) error {
 
 	if err != nil {
 		return c.JSON(http.StatusOK, map[string]interface{}{
-			"data":    data,
+			"data":    processes,
 			"success": true,
 			"message": "Operation successful",
 		})
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"data":    data,
+		"data":    processes,
 		"success": true,
 		"message": "Operation successful",
 	})
@@ -108,7 +150,9 @@ func GetProcessRealTime(c echo.Context) error {
 		for {
 			// Write
 
-			data, err := selectProcessesQuery()
+			query := buildQuery(c.QueryParams())
+
+			data, err := selectProcessesQuery(query)
 			if err != nil {
 				err := websocket.Message.Send(ws, "[]")
 				if err != nil {
