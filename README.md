@@ -13,12 +13,6 @@ This project gets all the running processes on your PC and updates the frontend 
 - Sqlite for database
 - Docker compose for orchestration
 
-1. Install dependencies
-
-```
-yarn install
-```
-
 ### Starting the app
 
 ```
