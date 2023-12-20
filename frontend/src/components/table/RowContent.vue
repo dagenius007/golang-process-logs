@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watchEffect, ref } from 'vue'
+import { watchEffect, ref, reactive } from 'vue'
 
 const statusMapping: Record<string, string> = {
   running: '#60CA57',
@@ -27,6 +27,7 @@ const props = defineProps<{
 
 const value = ref('')
 const color = ref({})
+const styleObject = ref({})
 
 watchEffect(async () => {
   let _v = ''
@@ -41,13 +42,16 @@ watchEffect(async () => {
   if (props.column.isPill) {
     const _value = props.row[props.column?.accessor]
     color.value = statusMapping[_value]
+    styleObject.value = {
+      backgroundColor: statusMapping[_value]
+    }
   }
 })
 </script>
 
 <template>
   <p v-if="props.column.cell" v-html="value" />
-  <p v-else :class="[props.column.isPill ? 'isPill' : null]" :style="{ backgroundColor: color }">
+  <p v-else :class="[props.column.isPill ? 'isPill' : null]" :style="styleObject">
     {{ value }}
   </p>
 </template>

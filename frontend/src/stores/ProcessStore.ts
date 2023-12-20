@@ -24,7 +24,7 @@ const useProcessStore = defineStore('process', () => {
   const processes = ref<Process[]>([])
 
   const userOptions = ref<{ label: string; value: string }[]>([])
-  const processInfo = ref<Record<string, string>[]>([])
+  const processInfo = ref<Record<string, string | number>[]>([])
 
   const totalCount = ref(0)
 
@@ -84,7 +84,7 @@ const useProcessStore = defineStore('process', () => {
         // }, 300)
       }
     } catch (e) {
-      console.log({ e })
+      console.error({ e })
     }
   }
 
@@ -96,7 +96,7 @@ const useProcessStore = defineStore('process', () => {
 
       userOptions.value = data.map((_data: string) => ({ label: _data, value: _data }))
     } catch (e) {
-      console.log({ e })
+      console.error({ e })
     }
   }
 
@@ -116,8 +116,6 @@ const useProcessStore = defineStore('process', () => {
             break
         }
       })
-
-      console.log({ data })
     } catch (e) {
       console.log({ e })
     }

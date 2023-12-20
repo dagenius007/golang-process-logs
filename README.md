@@ -2,13 +2,16 @@
 
 ## Overview
 
-We are seeking a capable developer to build a front-end application using either React or Next.js, combined with TypeScript. Your choice of framework should be based on your preference and expertise. The application should closely align with the designs found in this [Figma file](https://www.figma.com/file/hGBI3zpyHia5yrWsgeMP3K/Untitled?node-id=0%3A1&mode=dev). It is essential that the application utilises Styled Components for styling.
+This project gets all the running processes on your PC and updates the frontend in real time.
 
 ## Project Overview
 
 ### Tech Stack
 
-React was used for building the application. Follow the steps to setup on the application
+- Golang for backend
+- Vue3 and Pinia(Vuex 5) for the frontend and bundled with Vite
+- Sqlite for database
+- Docker compose for orchestration
 
 1. Install dependencies
 
@@ -18,44 +21,66 @@ yarn install
 
 ### Starting the app
 
-Now you are ready to run the application.:
-
-#### Starting the app with local apis:
-
 ```
-yarn start
+docker-compose up -d
 ```
 
 ### Project Src Structure
 
-#### Components
+### Backend
 
-This contains all styled components. It is setup in a block format where all the dependency are inside the folder. Dependencies like the styles , types and hooks(if need be). The project is quite small and so all the dependencies are all in the same file.
+```
+backend/
+    └── configs/                        <-- Db setup and run migration
+    └── handlers/                       <-- Route handlers
+    └── migrations/                     <-- Migration scripts
+    └── mocks/                          <-- Test mocks
+    └── mocks/                          <-- Fetches all the running processes
+        ├── process_darwin.go           <-- build tags for darwin OS(e.g macos)
+        ├── process_linux.go/           <-- build tags for unix OS(e.g linux , ubuntu)
+        ├── process.go/                 <-- default process file
+    ├── routes/                         <-- Resource routes
+    ├── types                           <-- Global struct types
+    ├── utils                           <-- Helper functions
+    ├── .dockerignore                   <-- Docker ignore
+    ├── .env.example                    <-- .env example
+    ├── .gitignore                      <-- ignored files and folders
+    ├── cron.go                         <-- Cron file
+    ├── Dockerfile                      <-- Docker image for the backend service
+    ├── go.mod
+    ├── go.sum
+    └── main.go
 
-#### Global Styles
+```
 
-All generic styles used in various parts of the project for basic styling. It is also have media query for responsive design.
+#### Run Tests
 
-#### Hooks
+```
+    go test ./...
+```
 
-Generic functions used by various components to improve performance and also for abstractions of function
+### Frontend
 
-#### Internals
+```
+frontend/
+    └── src/
+        ├── assests/                    <-- Frontend assests
+        ├── components/
+        ├── internals/
+        ├── mocks/
+        ├── router/                     <-- page router
+        ├── stores/                     <-- vuex stores
+        ├── styles/
+        ├── utils/                      <-- Helper functions
+        ├── views/                      <-- pages by modules
+        ├── App.vue                     <-- Vue entry point
+        ├── main.ts                     <-- Application entry point
+        ├── tsconfig.json/
+    ├── ***                             <-- All external files are configs for (Vitest , Tailwing , vite and tsconfig and package manager)
+```
 
-General configurations used in the project
+### TODOs
 
-#### Mocks
-
-Mocked data for tests.
-
-#### Pages
-
-Representation of each modules. It will be used to determine component loaded on a particular route
-
-#### Types
-
-Generic interface to define the structure and shape of an object.
-
-#### Utils
-
-They are helper functions.
+- Add graph showing user against total cpu and memory usage (API ready: /reports)
+- Add more test coverage
+- Get processes on windows PC
