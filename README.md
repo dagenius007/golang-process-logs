@@ -78,3 +78,9 @@ frontend/
 - Add graph showing user against total cpu and memory usage (API ready: /reports)
 - Add more test coverage
 - Get processes on windows PC
+
+### References
+
+- Add graph showing user against total cpu and memory usage (API ready: /reports)
+- Add more test coverage
+- Get processes on windows PC
