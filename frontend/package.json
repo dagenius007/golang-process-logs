@@ -16,6 +16,7 @@
   "dependencies": {
     "@heroicons/vue": "^2.0.18",
     "@vue-hero-icons/outline": "^1.7.2",
+    "apexcharts": "^3.45.0",
     "axios": "^1.6.2",
     "pinia": "^2.1.7",
     "vue": "^3.3.10",
@@ -23,6 +24,7 @@
     "vue-feather-icons": "^5.1.0",
     "vue-router": "^4.2.5",
     "vue-styled-components": "^1.6.0",
+    "vue3-apexcharts": "^1.4.4",
     "vue3-popper": "^1.5.0"
   },
   "devDependencies": {

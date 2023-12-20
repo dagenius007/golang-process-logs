@@ -18,3 +18,10 @@ type Process struct {
 	CreatedAt          time.Time `json:"createdAt"`
 	UpdatedAt          time.Time `json:"updatedAt"`
 }
+
+type ProcessUserReport struct {
+	User                 string  `json:"user"`
+	TotalUserCpuUsage    float64 `json:"totalUserCpuUsage"`
+	TotalUserMemoryUsage float64 `json:"totalUserMemoryUsage"`
+	TotalProcesses       int64   `json:"totalProcesses"`
+}

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline'
 interface InputProps {
   customStyles?: Record<string, string>
   customClass?: string
   modelValue: string
   icon?: any
+  isSearch: boolean
   type?: string
   placeholder?: string
 }
@@ -23,12 +25,19 @@ const type = ref(props.type || 'text')
 <template>
   <div class="InputWrapper" :style="props.customStyles">
     <!-- {icon && icon} -->
+
+    <div v-if="isSearch" class="SearchIcon">
+      <MagnifyingGlassIcon class="h-5 w-5 text-[#4F4999]" />
+    </div>
+
     <input
       class="InputField"
+      :class="[isSearch ? 'hasIcon' : null]"
       :value="modelValue"
       :placeholder="props.placeholder"
       :type="type"
       @input="updateValue"
+      @change="updateValue"
     />
   </div>
 </template>
@@ -48,8 +57,8 @@ const type = ref(props.type || 'text')
     transition: 0.3s ease-in;
     outline: none;
     font-size: 13px;
-    &.icon {
-      padding-left: 30px;
+    &.hasIcon {
+      padding-left: 35px;
     }
     &:focus {
       border: 1px solid #999dff;
@@ -59,7 +68,7 @@ const type = ref(props.type || 'text')
     }
   }
 
-  svg {
+  .SearchIcon {
     color: #999dff;
     top: 50%;
     transform: translateY(-50%);

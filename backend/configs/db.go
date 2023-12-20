@@ -35,7 +35,6 @@ func ConnectDb() {
 		file.Close()
 	}
 
-	fmt.Println("golang", os.Getenv("SQLITE_DB"))
 	db, err := sql.Open("sqlite3", PATH)
 	if err != nil {
 		// Log to error text file
@@ -57,6 +56,9 @@ func ConnectDb() {
 
 	Db.Exec("DROP table processes")
 
+	// CREATE INDEX idx_user ON user (processes);
+	// CREATE INDEX idx_state ON state (processes);
+
 	_, derr := Db.Exec(`
 	BEGIN;
 
@@ -77,8 +79,7 @@ func ConnectDb() {
 		updatedAt timestamp
 	);
 	
-	CREATE INDEX idx_user ON user (processes);
-	CREATE INDEX idx_state ON state (processes);
+
 	
 	COMMIT;
 	`)

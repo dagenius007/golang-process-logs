@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	. "binalyze-test/types"
+	"binalyze-test/utils"
 
 	// . "binalyze-test/types"
 
@@ -52,14 +53,14 @@ func statInfo(p *Process, pid int32) (*Process, error) {
 		return p, err
 	}
 
-	p.CpuUsage = float64(cpuUsage)
+	p.CpuUsage = utils.FormatTo2Decimal(float64(cpuUsage))
 
 	memoryUsage, err := strconv.ParseFloat(stats[2], 32)
 	if err != nil {
 		return p, err
 	}
 
-	p.MemoryUsage = float64(memoryUsage)
+	p.MemoryUsage = utils.FormatTo2Decimal(float64(memoryUsage))
 
 	// I am using a larger variable because values come kb which could be large
 	residentMemorySize, err := strconv.ParseUint(stats[3], 10, 64)

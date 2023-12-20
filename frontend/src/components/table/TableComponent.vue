@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import RowContent from './RowContent.vue'
+import { ref } from 'vue'
 interface ColumnProps {
   header: string
   accessor: string
@@ -12,9 +12,18 @@ interface TableProps {
   rows: Record<string, any>[]
   isLoading: boolean
   testId?: string
+  isPaginated?: boolean
+  totalcount: number
 }
 
 const props = defineProps<TableProps>()
+const currentPage = ref(1)
+
+const emit = defineEmits(['page-change'])
+
+function onPageChange() {
+  emit('page-change', { page: currentPage, limit: 0 })
+}
 </script>
 
 <template>
@@ -33,18 +42,6 @@ const props = defineProps<TableProps>()
         </tr>
       </thead>
 
-      <!-- <tbody>
-          {rows.map((row: Record<string, string | number>, i: number) => (
-            <Tr key={i} data-testid={`${testId}-row`}>
-              {columns.map((column: ColumnProps, i: number) => (
-                <Td key={i} style={column.styles}>
-                  <RowContent isLoading={isLoading} row={row} column={column} />
-                </Td>
-              ))}
-            </Tr>
-          ))}
-        </tbody> -->
-
       <tbody>
         <tr
           class="Tr"
@@ -52,20 +49,25 @@ const props = defineProps<TableProps>()
           :key="index"
           :data-testid="`${testId}-row`"
         >
-          <!-- {columns.map((column: ColumnProps, i: number) => ( -->
           <td class="Td" v-for="(column, i) in props.columns" :key="i" :style="column.styles">
-            Hello
             <RowContent :isLoading="isLoading" :column="column" :row="row" />
-            <!-- <RowContent isLoading="{isLoading}" row="{row}" column="{column}" /> -->
           </td>
-          <!-- ))} -->
         </tr>
       </tbody>
     </table>
   </div>
+  <div class="Pagination">
+    <vue-awesome-paginate
+      :total-items="totalcount"
+      :items-per-page="10"
+      :max-pages-shown="10"
+      v-model="currentPage"
+      :on-click="onPageChange"
+    />
+  </div>
 </template>
 
-<style lang="postcss" scoped>
+<style lang="postcss">
 .TableContainer {
   @apply overflow-scroll;
   .TableWrapper {
@@ -75,14 +77,14 @@ const props = defineProps<TableProps>()
   .Th {
     @apply text-left font-medium;
     font-size: 13px;
-    padding: 15px;
+    padding: 20px;
     color: #6f767e;
   }
 
   .Td {
-    @apply text-sm font-medium;
-    color: #1a1d1f;
-    padding: 15px;
+    @apply text-xs;
+    color: #5c5c80;
+    padding: 20px;
   }
 
   .Tr {
@@ -91,5 +93,35 @@ const props = defineProps<TableProps>()
       background: rgba(244, 244, 244, 0.5);
     }
   }
+}
+
+.Pagination {
+  @apply mt-5 flex justify-center;
+}
+
+.pagination-container {
+  display: flex;
+  column-gap: 10px;
+}
+.paginate-buttons {
+  height: 40px;
+  width: 40px;
+  cursor: pointer;
+  background-color: transparent;
+  color: black;
+  border: 0;
+}
+.paginate-buttons:hover {
+  background-color: #d8d8d8;
+  border-radius: 50%;
+}
+.active-page {
+  background-color: #b188e6;
+  border: 1px solid #b188e6;
+  color: white;
+  border-radius: 50%;
+}
+.active-page:hover {
+  background-color: #b188e6;
 }
 </style>

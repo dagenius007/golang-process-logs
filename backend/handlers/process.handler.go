@@ -2,11 +2,14 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"binalyze-test/configs"
@@ -16,6 +19,46 @@ import (
 	"github.com/labstack/echo/v4"
 	"golang.org/x/net/websocket"
 )
+
+func getUserCount() (int, error) {
+	rows, err := configs.Db.Query("SELECT COUNT(*) FROM processes GROUP BY user")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	var count int
+
+	for rows.Next() {
+		if err := rows.Scan(&count); err != nil {
+			return count, err
+		}
+	}
+
+	fmt.Println("Number of rows are", count)
+
+	return count, nil
+}
+
+func getProcessCount() (int, error) {
+	rows, err := configs.Db.Query("SELECT COUNT(*) FROM processes")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	var count int
+
+	for rows.Next() {
+		if err := rows.Scan(&count); err != nil {
+			return count, err
+		}
+	}
+
+	fmt.Println("Number of rows are", count)
+
+	return count, nil
+}
 
 func insertManyProcessQuery(processes []Process) error {
 	sqlStr := "INSERT INTO processes (user, pid , cpuUsage , memoryUsage , residentMemorySize,  virtualMemorySize , state , totalTime , cpuTime , command , priority, createdAt , updatedAt) VALUES "
@@ -44,18 +87,6 @@ func insertManyProcessQuery(processes []Process) error {
 	return nil
 }
 
-func FetchAndInsertProcess() {
-	processes := processHandler.GetProcesses()
-
-	err := insertManyProcessQuery(processes)
-	if err != nil {
-		// log errror
-		fmt.Println("err", err)
-	}
-
-	fmt.Println("got here")
-}
-
 func selectProcessesQuery(query string) ([]Process, error) {
 	processes := []Process{}
 
@@ -65,7 +96,6 @@ func selectProcessesQuery(query string) ([]Process, error) {
 	}
 
 	for rows.Next() {
-		fmt.Println("row", rows)
 		i := Process{}
 		err = rows.Scan(&i.ID, &i.User, &i.PID, &i.CpuUsage, &i.MemoryUsage, &i.VirtualMemorySize, &i.ResidentMemorySize, &i.State, &i.TotalTime, &i.CpuTime, &i.Command, &i.Priority, &i.CreatedAt, &i.UpdatedAt)
 		if err != nil {
@@ -79,24 +109,29 @@ func selectProcessesQuery(query string) ([]Process, error) {
 	return processes, nil
 }
 
-func buildQuery(params url.Values) string {
+func buildQuery(params url.Values) (string, int, int) {
 	query := "SELECT * FROM processes"
 	whereQuery := ""
 	// build query based on params
 	page, limit := 1, 10
 
 	if params.Has("state") {
-		whereQuery = fmt.Sprintf("%s state = %s AND", whereQuery, params.Get("state"))
+		whereQuery = fmt.Sprintf("%s state='%s' AND", whereQuery, params.Get("state"))
 	}
 
 	if params.Has("user") {
-		whereQuery = fmt.Sprintf("%s user = %s AND", whereQuery, params.Get("user"))
+		whereQuery = fmt.Sprintf("%s user = '%s' AND", whereQuery, params.Get("user"))
+	}
+
+	if params.Has("search") {
+		whereQuery = fmt.Sprintf("%s (user LIKE '%%%s%%' OR command LIKE '%%%s%%') AND", whereQuery, params.Get("search"), params.Get("search"))
 	}
 
 	if len(whereQuery) > 0 {
 		// find last AND and remove
-		lastAndIndex := strings.LastIndex(query, "AND")
-		whereQuery = whereQuery[:lastAndIndex]
+		lastAndIndex := strings.LastIndex(whereQuery, "AND")
+
+		whereQuery = whereQuery[:lastAndIndex-1]
 
 		whereQuery = "WHERE" + whereQuery + " "
 	}
@@ -113,32 +148,163 @@ func buildQuery(params url.Values) string {
 
 	query = fmt.Sprintf("%s %sLIMIT %d OFFSET %d", query, whereQuery, limit, offset)
 
-	return query
+	return query, limit, page
+}
+
+func FetchAndInsertProcess() {
+	processes := processHandler.GetProcesses()
+
+	err := insertManyProcessQuery(processes)
+	if err != nil {
+		// log errror
+		fmt.Println("err", err)
+	}
+
+	fmt.Println("got here")
 }
 
 func GetProcess(c echo.Context) error {
-	query := buildQuery(c.QueryParams())
+	query, limit, page := buildQuery(c.QueryParams())
 
 	processes, err := selectProcessesQuery(query)
+
+	data := map[string]interface{}{
+		"processes": processes,
+		"total":     0,
+		"limit":     limit,
+		"page":      page,
+	}
+
 	if err != nil {
 		fmt.Println("err", err)
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"data":    processes,
+			"data":    data,
 			"success": false,
 			"message": "Operation not successful",
 		})
 	}
 
+	// Get table size
+
+	total, err := getProcessCount()
 	if err != nil {
 		return c.JSON(http.StatusOK, map[string]interface{}{
-			"data":    processes,
-			"success": true,
-			"message": "Operation successful",
+			"data":    data,
+			"success": false,
+			"message": "Operation not successful",
 		})
 	}
 
+	data["total"] = total
+
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"data":    processes,
+		"data":    data,
+		"success": true,
+		"message": "Operation successful",
+	})
+}
+
+func GetProcessUsers(c echo.Context) error {
+	users := []string{}
+
+	rows, err := configs.Db.Query("SELECT user FROM processes GROUP BY user")
+	if err != nil {
+		return c.JSON(http.StatusOK, map[string]interface{}{
+			"data":    users,
+			"success": false,
+			"message": "Operation not successful",
+		})
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		user := ""
+		err = rows.Scan(&user)
+		if err != nil {
+			fmt.Println("err", err)
+			return c.JSON(http.StatusOK, map[string]interface{}{
+				"data":    users,
+				"success": false,
+				"message": "Operation not successful",
+			})
+		}
+
+		users = append(users, user)
+
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"data":    users,
+		"success": true,
+		"message": "Operation successful",
+	})
+}
+
+func GetProcessCounts(c echo.Context) error {
+	data := map[string]int{
+		"processCount": 0,
+		"usersCount":   0,
+	}
+
+	processCount, err := getProcessCount()
+	if err != nil {
+		return c.JSON(http.StatusOK, map[string]interface{}{
+			"data":    data,
+			"success": false,
+			"message": "Operation not successful",
+		})
+	}
+
+	data["processCount"] = processCount
+
+	usersCount, err := getUserCount()
+	if err != nil {
+		return c.JSON(http.StatusOK, map[string]interface{}{
+			"data":    data,
+			"success": false,
+			"message": "Operation not successful",
+		})
+	}
+
+	data["usersCount"] = usersCount
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"data":    data,
+		"success": true,
+		"message": "Operation successful",
+	})
+}
+
+func GetProcessReports(c echo.Context) error {
+	data := []ProcessUserReport{}
+
+	rows, err := configs.Db.Query("SELECT user FROM processes GROUP BY user")
+	if err != nil {
+		return c.JSON(http.StatusOK, map[string]interface{}{
+			"data":    data,
+			"success": false,
+			"message": "Operation not successful",
+		})
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		report := ProcessUserReport{}
+		err = rows.Scan(&report.User, &report.TotalUserCpuUsage, &report.TotalUserMemoryUsage, &report.TotalProcesses)
+		if err != nil {
+			fmt.Println("err", err)
+			return c.JSON(http.StatusOK, map[string]interface{}{
+				"data":    data,
+				"success": false,
+				"message": "Operation not successful",
+			})
+		}
+		data = append(data, report)
+
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"data":    data,
 		"success": true,
 		"message": "Operation successful",
 	})
@@ -150,7 +316,7 @@ func GetProcessRealTime(c echo.Context) error {
 		for {
 			// Write
 
-			query := buildQuery(c.QueryParams())
+			query, _, _ := buildQuery(c.QueryParams())
 
 			data, err := selectProcessesQuery(query)
 			if err != nil {
@@ -172,8 +338,9 @@ func GetProcessRealTime(c echo.Context) error {
 
 			err = websocket.Message.Send(ws, msg)
 			if err != nil {
-				fmt.Println("err", err)
-				c.Logger().Error(err)
+				if errors.Is(err, syscall.EPIPE) {
+					break
+				}
 			}
 		}
 	}).ServeHTTP(c.Response(), c.Request())

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Processes from '../components/ProcessComponent.vue'
+import Processes from '@/components/processes/ProcessComponent.vue'
 </script>
 
 <template>

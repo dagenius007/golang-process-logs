@@ -3,7 +3,7 @@ export defalut { props: ['isLoading', 'row', 'column'], setup() { console.log({ 
 target an in-DOM template: // template: '#my-template-element' }
 
 <script setup lang="ts">
-import { h, ref } from 'vue'
+import { watchEffect, ref } from 'vue'
 interface ColumnProps {
   header: string
   accessor: string
@@ -17,46 +17,21 @@ const props = defineProps<{
   isLoading: boolean
 }>()
 
-let v = ''
-if (props.column.cell) {
-  v = props.column.cell(props.row[props.column?.accessor])
-} else {
-  v = props.row[props.column?.accessor] || '-'
-}
+const value = ref('')
 
-const value = ref(v)
+watchEffect(async () => {
+  let _v = ''
+  if (props.column.cell) {
+    _v = props.column.cell(props.row[props.column?.accessor])
+  } else {
+    _v = props.row[props.column?.accessor] ?? '-'
+  }
+
+  value.value = _v
+})
 </script>
 
 <template>
-  <h1 v-if="props.column.cell" v-html="value" />
-  <h1 v-else>{{ value }}</h1>
+  <p v-if="props.column.cell" v-html="value" />
+  <p v-else>{{ value }}</p>
 </template>
-
-<style lang="postcss" scoped>
-.TableContainer {
-  @apply overflow-scroll;
-  .TableWrapper {
-    @apply w-full whitespace-nowrap border-collapse;
-  }
-
-  .Th {
-    @apply text-left font-medium;
-    font-size: 13px;
-    padding: 15px;
-    color: #6f767e;
-  }
-
-  .Td {
-    @apply text-sm font-medium;
-    color: #1a1d1f;
-    padding: 15px;
-  }
-
-  .Tr {
-    @apply cursor-pointer;
-    &:nth-child(odd) {
-      background: rgba(244, 244, 244, 0.5);
-    }
-  }
-}
-</style>
