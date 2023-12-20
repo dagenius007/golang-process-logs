@@ -1,5 +1,5 @@
 const debounce = (fn: any, delay: number) => {
-  let timeout: NodeJS.Timeout
+  let timeout: any
 
   return (...args: any[]) => {
     if (timeout) {

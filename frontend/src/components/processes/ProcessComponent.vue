@@ -40,11 +40,11 @@ const columns = ref([
     accessor: 'memoryUsage'
   },
   {
-    header: 'Resident Memory Size',
+    header: 'Resident Memory Size(MB)',
     accessor: 'residentMemorySize'
   },
   {
-    header: 'Virtual Memory Size',
+    header: 'Virtual Memory Size(MB)',
     accessor: 'virtualMemorySize'
   },
   {
@@ -58,11 +58,6 @@ const columns = ref([
   {
     header: 'CPU Time',
     accessor: 'cpuTime'
-  },
-
-  {
-    header: 'State',
-    accessor: 'state'
   },
   {
     header: 'Priority',

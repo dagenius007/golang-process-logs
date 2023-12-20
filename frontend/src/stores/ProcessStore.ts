@@ -12,8 +12,6 @@ const handleWebsocketMessage = (data: string) => {
   if (data) {
     try {
       processes = JSON.parse(data)
-
-      console.log({ processes })
     } catch (e) {
       console.error(e)
     }
@@ -25,7 +23,7 @@ const useProcessStore = defineStore('process', () => {
   const processes = ref<Process[]>([])
 
   const userOptions = ref<{ label: string; value: string }[]>([])
-  const processInfo = ref<Record<string, string | number>[]>([])
+  const processInfo = ref<Record<string, string>[]>([])
 
   const totalCount = ref(0)
 

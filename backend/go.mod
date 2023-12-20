@@ -3,6 +3,7 @@ module binalyze-test
 go 1.20
 
 require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
@@ -17,8 +18,10 @@ require (
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mattn/go-sqlite3 v1.14.18 // indirect
 	github.com/mitchellh/go-ps v1.0.0 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/radovskyb/watcher v1.0.7 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
+	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	golang.org/x/crypto v0.14.0 // indirect
@@ -26,4 +29,5 @@ require (
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

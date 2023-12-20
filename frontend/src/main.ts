@@ -5,6 +5,7 @@ import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
 import Popper from 'vue3-popper'
+//@ts-ignore
 import VueAwesomePaginate from 'vue-awesome-paginate'
 import 'vue-awesome-paginate/dist/style.css'
 

@@ -3,6 +3,7 @@
   "compilerOptions": {
     "strictFunctionTypes": false,
     "strict": false,
+    "allowJs": true,
     "typeRoots": ["../../node_modules/@heroicons/**/*.d.ts"]
   },
   "references": [
