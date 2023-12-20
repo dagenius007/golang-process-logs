@@ -1,7 +1,7 @@
 <script setup lang="ts">
 interface CardProps {
   title: string
-  value: string | number
+  value: string
 }
 
 const props = defineProps<CardProps>()

@@ -24,7 +24,7 @@ const useProcessStore = defineStore('process', () => {
   const processes = ref<Process[]>([])
 
   const userOptions = ref<{ label: string; value: string }[]>([])
-  const processInfo = ref<Record<string, string | number>[]>([])
+  const processInfo = ref<Record<string, string>[]>([])
 
   const totalCount = ref(0)
 
@@ -109,10 +109,10 @@ const useProcessStore = defineStore('process', () => {
       Object.keys(data).map((key: string) => {
         switch (true) {
           case key == 'processCount':
-            processInfo.value.push({ title: 'Total process', value: data[key] })
+            processInfo.value.push({ title: 'Total process', value: data[key].toString() })
             break
           case key == 'usersCount':
-            processInfo.value.push({ title: 'Total users', value: data[key] })
+            processInfo.value.push({ title: 'Total users', value: data[key].toString() })
             break
         }
       })
