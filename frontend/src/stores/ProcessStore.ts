@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import api from '@/internals/api'
+import { isHttps } from '@/utils/helper'
 
 interface Process {
   key: number
@@ -71,13 +72,13 @@ const useProcessStore = defineStore('process', () => {
 
       totalCount.value = data.total
 
-      const socket = new WebSocket(`ws://localhost:1323/api/v1/ws?${query}`)
+      const apiHost = import.meta.env.VITE_API_HOST
+
+      const socket = new WebSocket(`${isHttps() ? 'wss:' : 'ws:'}//${apiHost}/ws?${query}`)
 
       socket.onmessage = (event: MessageEvent) => {
-        // setInterval(() => {
         const _processes = handleWebsocketMessage(event.data)
         if (_processes.length > 0) {
-          // console.log({ _processes })
           processes.value = _processes
         }
         // }, 300)

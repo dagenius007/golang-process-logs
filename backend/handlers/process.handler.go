@@ -21,13 +21,13 @@ import (
 )
 
 func getUserCount() (int, error) {
+	var count int
+
 	rows, err := configs.Db.Query("SELECT COUNT(*) FROM processes GROUP BY user")
 	if err != nil {
-		log.Fatal(err)
+		return count, err
 	}
 	defer rows.Close()
-
-	var count int
 
 	for rows.Next() {
 		if err := rows.Scan(&count); err != nil {
@@ -35,19 +35,18 @@ func getUserCount() (int, error) {
 		}
 	}
 
-	fmt.Println("Number of rows are", count)
+	log.Println("Total number of users:", count)
 
 	return count, nil
 }
 
 func getProcessCount() (int, error) {
+	var count int
 	rows, err := configs.Db.Query("SELECT COUNT(*) FROM processes")
 	if err != nil {
-		log.Fatal(err)
+		return count, err
 	}
 	defer rows.Close()
-
-	var count int
 
 	for rows.Next() {
 		if err := rows.Scan(&count); err != nil {
@@ -55,7 +54,7 @@ func getProcessCount() (int, error) {
 		}
 	}
 
-	fmt.Println("Number of rows are", count)
+	log.Println("Total number of processes:", count)
 
 	return count, nil
 }
@@ -81,9 +80,11 @@ func insertManyProcessQuery(processes []Process) error {
 	// format all vals at once
 	_, err := configs.Db.Exec(sqlStr, vals...)
 	if err != nil {
-		fmt.Println("err", err)
 		return err
 	}
+
+	log.Println("Processes insertion was successful")
+
 	return nil
 }
 
@@ -160,7 +161,7 @@ func FetchAndInsertProcess() {
 		fmt.Println("err", err)
 	}
 
-	fmt.Println("got here")
+	log.Println("Running processes fetched and inserted into db")
 }
 
 func GetProcess(c echo.Context) error {
@@ -176,7 +177,7 @@ func GetProcess(c echo.Context) error {
 	}
 
 	if err != nil {
-		fmt.Println("err", err)
+		log.Println("Error fetching processes:", err)
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"data":    data,
 			"success": false,
@@ -188,6 +189,7 @@ func GetProcess(c echo.Context) error {
 
 	total, err := getProcessCount()
 	if err != nil {
+		log.Println("Error fetching processes count:", err)
 		return c.JSON(http.StatusOK, map[string]interface{}{
 			"data":    data,
 			"success": false,
@@ -221,14 +223,13 @@ func GetProcessUsers(c echo.Context) error {
 		user := ""
 		err = rows.Scan(&user)
 		if err != nil {
-			fmt.Println("err", err)
+			log.Println("Error getting scanning users:", err)
 			return c.JSON(http.StatusOK, map[string]interface{}{
 				"data":    users,
 				"success": false,
 				"message": "Operation not successful",
 			})
 		}
-
 		users = append(users, user)
 
 	}
@@ -248,6 +249,7 @@ func GetProcessCounts(c echo.Context) error {
 
 	processCount, err := getProcessCount()
 	if err != nil {
+		log.Println("Error getting processes:", err)
 		return c.JSON(http.StatusOK, map[string]interface{}{
 			"data":    data,
 			"success": false,
@@ -259,6 +261,7 @@ func GetProcessCounts(c echo.Context) error {
 
 	usersCount, err := getUserCount()
 	if err != nil {
+		log.Println("Error getting users:", err)
 		return c.JSON(http.StatusOK, map[string]interface{}{
 			"data":    data,
 			"success": false,
@@ -280,6 +283,7 @@ func GetProcessReports(c echo.Context) error {
 
 	rows, err := configs.Db.Query("SELECT user FROM processes GROUP BY user")
 	if err != nil {
+		log.Println("Error getting users:", err)
 		return c.JSON(http.StatusOK, map[string]interface{}{
 			"data":    data,
 			"success": false,
@@ -292,7 +296,7 @@ func GetProcessReports(c echo.Context) error {
 		report := ProcessUserReport{}
 		err = rows.Scan(&report.User, &report.TotalUserCpuUsage, &report.TotalUserMemoryUsage, &report.TotalProcesses)
 		if err != nil {
-			fmt.Println("err", err)
+			log.Println("Error scanning users report usage:", err)
 			return c.JSON(http.StatusOK, map[string]interface{}{
 				"data":    data,
 				"success": false,

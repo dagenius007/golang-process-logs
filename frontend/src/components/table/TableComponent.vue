@@ -13,6 +13,7 @@ interface TableProps {
   isLoading: boolean
   testId?: string
   isPaginated?: boolean
+  isPill?: boolean
   totalcount: number
 }
 

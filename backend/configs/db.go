@@ -2,9 +2,12 @@ package configs
 
 import (
 	"database/sql"
-	"fmt"
+	"log"
 	"os"
 
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/sqlite3"
+	"github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -13,6 +16,25 @@ var Db *sql.DB
 const PATH = "../db/processes.db"
 
 func runMigrations() {
+	instance, err := sqlite3.WithInstance(Db, &sqlite3.Config{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fSrc, err := (&file.File{}).Open("./migrations")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	m, err := migrate.NewWithInstance("file", fSrc, "sqlite3", instance)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// modify for Down
+	if err := m.Up(); err != nil {
+		log.Println("Error on migration", err)
+	}
 }
 
 func ConnectDb() {
@@ -23,12 +45,12 @@ func ConnectDb() {
 		// Make directory
 		err := os.Mkdir("../db", 0o777)
 		if err != nil {
-			fmt.Println("direcorty err", err)
+			log.Fatal("Creating direcorty err", err)
 			panic(err)
 		}
 		file, err := os.Create(PATH)
 		if err != nil {
-			fmt.Println("err", err)
+			log.Fatal("Error in creating DB path", err)
 			panic(err)
 		}
 
@@ -38,55 +60,22 @@ func ConnectDb() {
 	db, err := sql.Open("sqlite3", PATH)
 	if err != nil {
 		// Log to error text file
-		fmt.Println("err", err)
+		log.Fatal("err", err)
 		panic(err)
 	}
 
 	if err = db.Ping(); err != nil {
 		// log panic
-		fmt.Println("verr", err)
+		log.Fatal("Error on connecting db", err)
 		panic(err)
 	}
 
-	fmt.Println("Db connected sucessfully")
-
-	// Run migrations
+	log.Println("Db connected sucessfully")
 
 	Db = db
 
-	Db.Exec("DROP table processes")
+	// Run migrations
+	runMigrations()
 
-	// CREATE INDEX idx_user ON user (processes);
-	// CREATE INDEX idx_state ON state (processes);
-
-	_, derr := Db.Exec(`
-	BEGIN;
-
-	CREATE TABLE IF NOT EXISTS processes (
-		id INTEGER NOT NULL PRIMARY KEY,
-		user text,
-		pid integer NOT NULL UNIQUE,
-		cpuUsage integer,
-		memoryUsage integer,
-		residentMemorySize integer,
-		virtualMemorySize integer,
-		state text,
-		totalTime text,
-		cpuTime text,
-		command text,
-		priority text,
-		createdAt timestamp,
-		updatedAt timestamp
-	);
-	
-
-	
-	COMMIT;
-	`)
-
-	if derr != nil {
-		fmt.Println("derr", derr)
-	}
-
-	fmt.Println("Creating completed")
+	log.Println("Db migration was successful")
 }

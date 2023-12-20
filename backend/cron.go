@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 
 	"binalyze-test/handlers"
 
@@ -9,11 +9,10 @@ import (
 )
 
 func RunSchedule() {
-	fmt.Println("Fetching Process")
 	s := cron.New()
 
-	s.AddFunc("@every 10s", func() {
-		fmt.Println("Fetching Process")
+	s.AddFunc("@every 60s", func() {
+		log.Println("Cron service running")
 		handlers.FetchAndInsertProcess()
 	})
 

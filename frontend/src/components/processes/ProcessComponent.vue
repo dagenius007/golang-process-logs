@@ -27,6 +27,7 @@ const columns = ref([
     header: 'User',
     accessor: 'user'
   },
+
   {
     header: 'Command',
     accessor: 'command'
@@ -49,7 +50,13 @@ const columns = ref([
   },
   {
     header: 'State',
-    accessor: 'state'
+    accessor: 'state',
+    isPill: true
+  },
+  {
+    header: 'Priority',
+    accessor: 'priority',
+    isPill: true
   },
   {
     header: 'Process Time',
@@ -58,10 +65,6 @@ const columns = ref([
   {
     header: 'CPU Time',
     accessor: 'cpuTime'
-  },
-  {
-    header: 'Priority',
-    accessor: 'priority'
   }
 ])
 

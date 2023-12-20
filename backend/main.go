@@ -37,9 +37,7 @@ func main() {
 
 	routes.Routes(group)
 
-	RunSchedule()
-
-	fmt.Println("hluuuu")
+	go RunSchedule()
 
 	port := fmt.Sprintf(":%s", "1323")
 

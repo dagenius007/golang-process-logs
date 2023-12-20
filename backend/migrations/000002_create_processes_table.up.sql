@@ -1,4 +1,3 @@
-BEGIN;
 
 CREATE TABLE IF NOT EXISTS processes (
     id INTEGER NOT NULL PRIMARY KEY,
@@ -17,7 +16,5 @@ CREATE TABLE IF NOT EXISTS processes (
     updatedAt timestamp
 );
 
-CREATE INDEX idx_user ON user (processes);
-CREATE INDEX idx_state ON state (processes);
-
-COMMIT;
+CREATE INDEX idx_user ON processes (user);
+CREATE INDEX idx_state ON processes (state);

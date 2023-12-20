@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"os/user"
@@ -132,8 +133,6 @@ func calcCpuUsage(totalCpuTime, pStartTime float64) (float64, error) {
 
 	eTime := sysUptime - pStartTimeSec
 
-	fmt.Println("etime", eTime)
-
 	cpuUsage = (totalCpuTimeSec * 100) / eTime
 
 	return cpuUsage, nil
@@ -210,6 +209,8 @@ func getPids() ([]int32, error) {
 		}
 	}
 
+	log.Println("Linux pids fetched successfully")
+
 	return pidSlice, nil
 }
 
@@ -229,8 +230,6 @@ func statInfo(p *Process, pid int32) (*Process, error) {
 	name := string(contents[nameStart:nameEnd])
 
 	stats := strings.Fields(string(contents[nameEnd+2:]))
-
-	fmt.Println("other stats", stats)
 
 	p.PID = pid
 

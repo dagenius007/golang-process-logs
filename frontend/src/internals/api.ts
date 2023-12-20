@@ -1,8 +1,10 @@
 import axios from 'axios'
-// import { config } from './env.config'
+import { isHttps } from '@/utils/helper'
+
+const apiHost = import.meta.env.VITE_API_HOST
 
 const api = axios.create({
-  baseURL: 'http://localhost:1323/api/v1',
+  baseURL: isHttps() ? 'https://' : 'http://' + apiHost,
   headers: {
     'Content-Type': 'application/json'
   }

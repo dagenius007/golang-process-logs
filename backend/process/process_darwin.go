@@ -4,7 +4,6 @@
 package process
 
 import (
-	"log"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -19,16 +18,14 @@ import (
 
 func getPids() ([]int32, error) {
 	pids, err := unix.SysctlKinfoProcSlice("kern.proc.all")
+	if err != nil {
+		return nil, err
+	}
 
 	pidSlice := make([]int32, 0)
 
 	for _, pid := range pids {
 		pidSlice = append(pidSlice, pid.Proc.P_pid)
-	}
-
-	if err != nil {
-		log.Fatal(err)
-		return nil, err
 	}
 
 	return pidSlice, nil

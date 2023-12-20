@@ -11,26 +11,10 @@ services:
     build: ./frontend
     ports:
       - 5173:5173
+    environment:
+      - VITE_API_HOST=localhost:1323/api/v1
     depends_on:
       - backend
-
-#   migrate:
-#     image: migrate/migrate
-#     # networks:
-#     #   - new
-#     volumes:
-#       - migrations:/migrations
-#     command:
-#       [
-#         "-path",
-#         "/migrations",
-#         "-database",
-#         "./data/db/processes.db",
-#         "up",
-#         "3",
-#       ]
-#     depends_on:
-#       - backend
 
 volumes:
   migrations:

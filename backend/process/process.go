@@ -2,7 +2,6 @@ package process
 
 import (
 	"log"
-	"os"
 	"strings"
 
 	. "binalyze-test/types"
@@ -48,9 +47,11 @@ func getProcessList() []Process {
 	processes := make([]Process, 0)
 	pids, err := getPids()
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Error fetching pids:", err)
 		return processes
 	}
+
+	log.Println("Pids fetched successfully")
 
 	for _, pid := range pids {
 		p := &Process{}
@@ -60,17 +61,17 @@ func getProcessList() []Process {
 		// In that vain no process was outputted
 
 		if err != nil {
-			// fmt.Println("process err", err)
 			continue
 		}
 
 		processes = append(processes, *p)
 	}
 
+	log.Println("Processes fetched successfully")
+
 	return processes
 }
 
 func GetProcesses() []Process {
-	os.Open("/proc")
 	return getProcessList()
 }
