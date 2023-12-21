@@ -23,7 +23,7 @@ const currentPage = ref(1)
 const emit = defineEmits(['page-change'])
 
 function onPageChange() {
-  emit('page-change', { page: currentPage, limit: 0 })
+  emit('page-change', { page: currentPage.value, limit: 10 })
 }
 </script>
 

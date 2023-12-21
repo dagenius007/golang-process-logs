@@ -35,8 +35,6 @@ func getUserCount() (int, error) {
 		}
 	}
 
-	log.Println("Total number of users:", count)
-
 	return count, nil
 }
 
@@ -53,8 +51,6 @@ func getProcessCount() (int, error) {
 			return count, err
 		}
 	}
-
-	log.Println("Total number of processes:", count)
 
 	return count, nil
 }
@@ -152,13 +148,38 @@ func buildQuery(params url.Values) (string, int, int) {
 	return query, limit, page
 }
 
+func getProcessReport() ([]ProcessUserReport, error) {
+	data := []ProcessUserReport{}
+
+	rows, err := configs.Db.Query("SELECT user, ROUND(SUM(cpuUsage),2) AS totalCpuUsage, ROUND(SUM(memoryUsage),2) AS totalMemoryUsage , COUNT(pid) as totalProcesses FROM processes GROUP BY user ORDER BY COUNT(pid) DESC")
+	if err != nil {
+		log.Println("Error getting users:", err)
+		return data, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		report := ProcessUserReport{}
+		err = rows.Scan(&report.User, &report.TotalCpuUsage, &report.TotalMemoryUsage, &report.TotalProcesses)
+		if err != nil {
+			log.Println("Error scanning users report usage:", err)
+			return data, err
+		}
+
+		data = append(data, report)
+
+	}
+
+	return data, nil
+}
+
 func FetchAndInsertProcess() {
 	processes := processHandler.GetProcesses()
 
 	err := insertManyProcessQuery(processes)
 	if err != nil {
 		// log errror
-		fmt.Println("err", err)
+		log.Println("err", err)
 	}
 
 	log.Println("Running processes fetched and inserted into db")
@@ -279,32 +300,14 @@ func GetProcessCounts(c echo.Context) error {
 }
 
 func GetProcessReports(c echo.Context) error {
-	data := []ProcessUserReport{}
-
-	rows, err := configs.Db.Query("SELECT user FROM processes GROUP BY user")
+	data, err := getProcessReport()
 	if err != nil {
-		log.Println("Error getting users:", err)
+		log.Println("Error getting reports:", err)
 		return c.JSON(http.StatusOK, map[string]interface{}{
 			"data":    data,
 			"success": false,
 			"message": "Operation not successful",
 		})
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		report := ProcessUserReport{}
-		err = rows.Scan(&report.User, &report.TotalUserCpuUsage, &report.TotalUserMemoryUsage, &report.TotalProcesses)
-		if err != nil {
-			log.Println("Error scanning users report usage:", err)
-			return c.JSON(http.StatusOK, map[string]interface{}{
-				"data":    data,
-				"success": false,
-				"message": "Operation not successful",
-			})
-		}
-		data = append(data, report)
-
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
@@ -320,14 +323,22 @@ func GetProcessRealTime(c echo.Context) error {
 		for {
 			// Write
 
+			data := map[string]interface{}{
+				"processes": []Process{},
+				"reports":   []ProcessUserReport{},
+			}
+
 			query, _, _ := buildQuery(c.QueryParams())
 
-			data, err := selectProcessesQuery(query)
-			if err != nil {
-				err := websocket.Message.Send(ws, "[]")
-				if err != nil {
-					c.Logger().Error(err)
-				}
+			processes, err := selectProcessesQuery(query)
+			if err == nil {
+				data["processes"] = processes
+			}
+
+			reports, perr := getProcessReport()
+
+			if perr == nil {
+				data["reports"] = reports
 			}
 
 			var _json []byte
@@ -339,6 +350,8 @@ func GetProcessRealTime(c echo.Context) error {
 			}
 
 			msg := string(_json)
+
+			time.Sleep(1 * time.Minute)
 
 			err = websocket.Message.Send(ws, msg)
 			if err != nil {

@@ -9,6 +9,7 @@ import Card from '@/components/card/Card.vue'
 import Button from '@/components/button/Button.vue'
 import { debounce } from '@/utils/debounce'
 import { storeToRefs } from 'pinia'
+import ProcessChart from './ProcessChart.vue'
 
 const store = useProcessStore()
 
@@ -94,6 +95,7 @@ function handleFilter() {
       500
   }
 }
+
 watchEffect(async () => {
   if (searchValue.value != '') {
     debounce(store.fetchProcesses({ search: searchValue.value }), 500)
@@ -107,6 +109,7 @@ watchEffect(async () => {
       <Card :title="info.title" :value="info.value" />
     </div>
   </div>
+  <ProcessChart />
   <div class="TableHeader">
     <div class="flex md:w-[30%] w-full">
       <div class="FilterIcon">

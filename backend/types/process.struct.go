@@ -20,8 +20,8 @@ type Process struct {
 }
 
 type ProcessUserReport struct {
-	User                 string  `json:"user"`
-	TotalUserCpuUsage    float64 `json:"totalUserCpuUsage"`
-	TotalUserMemoryUsage float64 `json:"totalUserMemoryUsage"`
-	TotalProcesses       int64   `json:"totalProcesses"`
+	User             string  `json:"user"`
+	TotalCpuUsage    float64 `json:"totalCpuUsage"`
+	TotalMemoryUsage float64 `json:"totalMemoryUsage"`
+	TotalProcesses   int64   `json:"totalProcesses"`
 }

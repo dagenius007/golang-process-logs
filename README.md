@@ -81,6 +81,8 @@ frontend/
 
 ### References
 
-- Add graph showing user against total cpu and memory usage (API ready: /reports)
-- Add more test coverage
-- Get processes on windows PC
+- https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/deployment_guide/ch-proc#:~:text=The%20%2Fproc%2F%20directory%20(also,kernel's%20view%20of%20the%20system.
+- https://man7.org/linux/man-pages/man5/proc.5.html
+- https://sites.ualberta.ca/dept/chemeng/AIX-43/share/man/info/C/a_doc_lib/cmds/aixcmds4/ps.htm#A163C1169
+- https://man7.org/linux/man-pages/man1/ps.1.html
+-
