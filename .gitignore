@@ -1,4 +1,5 @@
 backend/.env
+db
 
 # Logsfrontend/logs
 frontend/.env
@@ -28,6 +29,7 @@ frontend/*.ntvs*
 frontend/*.njsproj
 frontend/*.sln
 frontend/*.sw?
+
 
 frontend/*.tsbuildinfo
 

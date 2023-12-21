@@ -13,7 +13,35 @@ import (
 
 var Db *sql.DB
 
-const PATH = "../db/processes.db"
+const (
+	PATH      = "../db"
+	FULL_PATH = "../db/processes.db"
+)
+
+func setupDb() {
+	var err error
+
+	// Create new sql file if file deos not exist
+
+	_, err = os.Stat(PATH)
+
+	if err == nil {
+		os.RemoveAll(PATH)
+	}
+
+	err = os.Mkdir(PATH, 0o777)
+	if err != nil {
+		log.Fatal("Creating direcorty err", err)
+		panic(err)
+	}
+	file, err := os.Create(FULL_PATH)
+	if err != nil {
+		log.Fatal("Error in creating DB path", err)
+		panic(err)
+	}
+
+	file.Close()
+}
 
 func runMigrations() {
 	instance, err := sqlite3.WithInstance(Db, &sqlite3.Config{})
@@ -38,26 +66,8 @@ func runMigrations() {
 }
 
 func ConnectDb() {
-	var err error
-
-	// Create new sql file if file deos not exist
-	if _, err := os.Stat(PATH); err != nil {
-		// Make directory
-		err := os.Mkdir("../db", 0o777)
-		if err != nil {
-			log.Fatal("Creating direcorty err", err)
-			panic(err)
-		}
-		file, err := os.Create(PATH)
-		if err != nil {
-			log.Fatal("Error in creating DB path", err)
-			panic(err)
-		}
-
-		file.Close()
-	}
-
-	db, err := sql.Open("sqlite3", PATH)
+	setupDb()
+	db, err := sql.Open("sqlite3", FULL_PATH)
 	if err != nil {
 		// Log to error text file
 		log.Fatal("err", err)
