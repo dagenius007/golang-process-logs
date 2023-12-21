@@ -1,6 +1,7 @@
 backend/.env
 
 # Logsfrontend/logs
+frontend/.env
 frontend/*.log
 frontend/npm-debug.log*
 frontend/yarn-debug.log*
