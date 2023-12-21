@@ -15,6 +15,15 @@ This project gets all the running processes on your PC and updates the frontend 
 
 ### Starting the app
 
+Build the project
+
+```
+docker-compose build
+
+```
+
+Start the project
+
 ```
 docker-compose up -d
 ```
@@ -75,9 +84,9 @@ frontend/
 
 ### TODOs
 
-- Add graph showing user against total cpu and memory usage (API ready: /reports)
 - Add more test coverage
 - Get processes on windows PC
+- Get data on instant load not on load of first data
 
 ### References
 
