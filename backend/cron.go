@@ -11,7 +11,7 @@ import (
 func RunSchedule() {
 	s := cron.New()
 
-	s.AddFunc("@every 60s", func() {
+	s.AddFunc("@every 30s", func() {
 		log.Println("Cron service running")
 		handlers.FetchAndInsertProcess()
 	})

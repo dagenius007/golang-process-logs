@@ -14,7 +14,7 @@ import (
 var Db *sql.DB
 
 const (
-	PATH      = "../db"
+	PATH      = "../db/"
 	FULL_PATH = "../db/processes.db"
 )
 
@@ -26,10 +26,14 @@ func setupDb() {
 	_, err = os.Stat(PATH)
 
 	if err == nil {
-		os.RemoveAll(PATH)
+		err := os.RemoveAll(PATH)
+		if err != nil {
+			log.Fatal("Error removing:", err)
+		}
 	}
 
 	err = os.Mkdir(PATH, 0o777)
+
 	if err != nil {
 		log.Fatal("Creating direcorty err", err)
 		panic(err)

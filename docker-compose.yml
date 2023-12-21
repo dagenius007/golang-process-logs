@@ -4,8 +4,6 @@ services:
     build: ./backend
     ports:
       - 1323:1323
-    volumes:
-      - ./db:/db
 
   frontend:
     build: ./frontend
