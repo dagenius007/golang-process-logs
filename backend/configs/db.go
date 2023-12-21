@@ -63,21 +63,19 @@ func runMigrations() {
 	if err := m.Up(); err != nil {
 		log.Println("Error on migration", err)
 	}
+
+	log.Println("Db created successfully")
 }
 
 func ConnectDb() {
 	setupDb()
 	db, err := sql.Open("sqlite3", FULL_PATH)
 	if err != nil {
-		// Log to error text file
 		log.Fatal("err", err)
-		panic(err)
 	}
 
 	if err = db.Ping(); err != nil {
-		// log panic
 		log.Fatal("Error on connecting db", err)
-		panic(err)
 	}
 
 	log.Println("Db connected sucessfully")
