@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia'
 
 const store = useProcessStore()
 
-store.fetchProcessUsersReport()
+// store.fetchProcessUsersReport()
 
 const { options, series } = storeToRefs(store)
 </script>

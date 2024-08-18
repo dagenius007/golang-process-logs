@@ -55,11 +55,9 @@ func getProcessList() []Process {
 
 	for _, pid := range pids {
 		p := &Process{}
-		p, err = statInfo(p, pid)
-
+		err = statInfo(p, pid)
 		// Assumption is that an error here is caused by process not found
 		// In that vain no process was outputted
-
 		if err != nil {
 			continue
 		}

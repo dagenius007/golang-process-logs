@@ -13,34 +13,27 @@ import (
 	"time"
 
 	"binalyze-test/configs"
-	processHandler "binalyze-test/process"
-	. "binalyze-test/types"
+
+	"binalyze-test/setup"
+	"binalyze-test/types"
 
 	"github.com/labstack/echo/v4"
 	"golang.org/x/net/websocket"
 )
 
+type ProcessHandler struct {
+	services *setup.ServiceDependencies
+}
+
+func UseAuthRoutes(routes *echo.Group, services *setup.ServiceDependencies) {
+	p := ProcessHandler{services: services}
+	routes.POST("/processes", p.getProcesses)
+}
+
 func getUserCount() (int, error) {
 	var count int
 
 	rows, err := configs.Db.Query("SELECT COUNT(*) FROM processes GROUP BY user")
-	if err != nil {
-		return count, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		if err := rows.Scan(&count); err != nil {
-			return count, err
-		}
-	}
-
-	return count, nil
-}
-
-func getProcessCount() (int, error) {
-	var count int
-	rows, err := configs.Db.Query("SELECT COUNT(*) FROM processes")
 	if err != nil {
 		return count, err
 	}
@@ -185,45 +178,43 @@ func FetchAndInsertProcess() {
 	log.Println("Running processes fetched and inserted into db")
 }
 
-func GetProcess(c echo.Context) error {
-	query, limit, page := buildQuery(c.QueryParams())
+func (p ProcessHandler) getProcesses(c echo.Context) error {
+	ctx := c.Request().Context()
 
-	processes, err := selectProcessesQuery(query)
+	page, limit := 1, 10
 
-	data := map[string]interface{}{
-		"processes": processes,
-		"total":     0,
-		"limit":     limit,
-		"page":      page,
+	if val, err := strconv.Atoi(c.QueryParam("page")); err == nil {
+		page = val
 	}
 
+	if val, err := strconv.Atoi(c.QueryParam("limit")); err == nil {
+		limit = val
+	}
+
+	offset := (page - 1) * limit
+
+	processList, err := p.services.ProcessService.GetProcesses(ctx, types.ProcessFilter{
+		State:  c.QueryParam("state"),
+		User:   c.QueryParam("user"),
+		Search: c.QueryParam("search"),
+		Limit:  limit,
+		Offset: offset,
+	})
 	if err != nil {
-		log.Println("Error fetching processes:", err)
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"data":    data,
-			"success": false,
-			"message": "Operation not successful",
+		return c.JSON(http.StatusOK, types.Response[*types.ProcessList]{
+			Data:    nil,
+			Success: false,
+			Message: "Operation failed",
 		})
 	}
 
-	// Get table size
+	processList.Limit = limit
+	processList.Page = page
 
-	total, err := getProcessCount()
-	if err != nil {
-		log.Println("Error fetching processes count:", err)
-		return c.JSON(http.StatusOK, map[string]interface{}{
-			"data":    data,
-			"success": false,
-			"message": "Operation not successful",
-		})
-	}
-
-	data["total"] = total
-
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"data":    data,
-		"success": true,
-		"message": "Operation successful",
+	return c.JSON(http.StatusOK, types.Response[*types.ProcessList]{
+		Data:    processList,
+		Success: true,
+		Message: "Operation Successful",
 	})
 }
 
@@ -344,7 +335,6 @@ func GetProcessRealTime(c echo.Context) error {
 			var _json []byte
 
 			_json, err = json.Marshal(data)
-
 			if err != nil {
 				c.Logger().Error(err)
 			}

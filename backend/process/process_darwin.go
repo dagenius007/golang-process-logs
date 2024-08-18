@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	. "binalyze-test/types"
+	"binalyze-test/types"
 	"binalyze-test/utils"
 
 	// . "binalyze-test/types"
@@ -31,12 +31,12 @@ func getPids() ([]int32, error) {
 	return pidSlice, nil
 }
 
-func statInfo(p *Process, pid int32) (*Process, error) {
+func statInfo(p *types.Process, pid int32) error {
 	args := "-o user=,pcpu=,%mem=,rss=,vsz=,stat=,etime=,time=,comm=,nice="
 
 	stdout, err := exec.Command("ps", args, strconv.Itoa(int(pid))).Output()
 	if err != nil {
-		return p, err
+		return err
 	}
 
 	stats := strings.Fields(string(stdout))
@@ -47,14 +47,14 @@ func statInfo(p *Process, pid int32) (*Process, error) {
 
 	cpuUsage, err := strconv.ParseFloat(stats[1], 32)
 	if err != nil {
-		return p, err
+		return err
 	}
 
 	p.CpuUsage = utils.FormatTo2Decimal(float64(cpuUsage))
 
 	memoryUsage, err := strconv.ParseFloat(stats[2], 32)
 	if err != nil {
-		return p, err
+		return err
 	}
 
 	p.MemoryUsage = utils.FormatTo2Decimal(float64(memoryUsage))
@@ -62,7 +62,7 @@ func statInfo(p *Process, pid int32) (*Process, error) {
 	// I am using a larger variable because values come kb which could be large
 	residentMemorySize, err := strconv.ParseUint(stats[3], 10, 64)
 	if err != nil {
-		return p, err
+		return err
 	}
 
 	// Convert to MB
@@ -70,7 +70,7 @@ func statInfo(p *Process, pid int32) (*Process, error) {
 
 	virtualMemorySize, err := strconv.ParseUint(stats[4], 10, 64)
 	if err != nil {
-		return p, err
+		return err
 	}
 
 	// Convert to MB
@@ -86,10 +86,10 @@ func statInfo(p *Process, pid int32) (*Process, error) {
 
 	priority, err := strconv.Atoi(stats[9])
 	if err != nil {
-		return p, err
+		return err
 	}
 
 	p.Priority = guagePriority(priority)
 
-	return p, nil
+	return nil
 }
