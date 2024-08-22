@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"log"
 
 	"binalyze-test/process"
 	"binalyze-test/types"
@@ -22,16 +21,17 @@ func NewProcessService(logger *logrus.Logger, repo types.ProcessRepository) *Pro
 	}
 }
 
-func (p ProcessService) FetchAndInsertProcess() {
+func (p ProcessService) FetchAndInsertProcess(ctx context.Context) {
+	useLogger := p.logger.WithContext(ctx).WithField("function", "FetchAndInsertProcess")
+
 	processes := process.GetProcesses()
 
-	err := insertManyProcessQuery(processes)
+	err := p.repo.InsertProcesses(ctx, processes)
 	if err != nil {
-		// log errror
-		log.Println("err", err)
+		useLogger.Error(err)
 	}
 
-	log.Println("Running processes fetched and inserted into db")
+	useLogger.Info("Running processes fetched and inserted into db")
 }
 
 func (c ProcessService) GetProcesses(ctx context.Context, filter types.ProcessFilter) (*types.ProcessList, error) {
@@ -45,4 +45,37 @@ func (c ProcessService) GetProcesses(ctx context.Context, filter types.ProcessFi
 		Processes: processes,
 		Totoal:    total,
 	}, nil
+}
+
+func (c ProcessService) GetProcessReport(ctx context.Context) ([]types.ProcessUserReport, error) {
+	useLogger := c.logger.WithContext(ctx).WithField("function", "GetProcessReport")
+	report, err := c.repo.GetProcessReport(ctx)
+	if err != nil {
+		useLogger.WithError(err).Error("Error fetching processes report")
+		return nil, err
+	}
+
+	return report, nil
+}
+
+func (c ProcessService) GetProcessUsers(ctx context.Context) ([]string, error) {
+	useLogger := c.logger.WithContext(ctx).WithField("function", "GetProcessUsers")
+	users, err := c.repo.GetUsers(ctx)
+	if err != nil {
+		useLogger.WithError(err).Error("Error fetching processes users")
+		return nil, err
+	}
+
+	return users, nil
+}
+
+func (c ProcessService) GetDashboardCounts(ctx context.Context) (types.DashboardCounts, error) {
+	useLogger := c.logger.WithContext(ctx).WithField("function", "GetDashboardCounts")
+	counts, err := c.repo.GetCounts(ctx)
+	if err != nil {
+		useLogger.WithError(err).Error("Error fetching user and processes count")
+		return counts, err
+	}
+
+	return counts, nil
 }

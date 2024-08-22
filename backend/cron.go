@@ -1,19 +1,20 @@
 package main
 
 import (
-	"log"
+	"context"
 
-	"binalyze-test/handlers"
+	"binalyze-test/setup"
 
 	"github.com/robfig/cron/v3"
 )
 
-func RunSchedule() {
+func RunSchedule(services setup.ServiceDependencies) {
+	ctx := context.Background()
 	s := cron.New()
 
 	s.AddFunc("@every 30s", func() {
-		log.Println("Cron service running")
-		handlers.FetchAndInsertProcess()
+		services.Logger.Info("Running cron service")
+		services.ProcessService.FetchAndInsertProcess(ctx)
 	})
 
 	s.Start()

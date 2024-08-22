@@ -1,10 +1,12 @@
 package routes
 
 import (
+	"binalyze-test/handlers"
+	"binalyze-test/setup"
+
 	"github.com/labstack/echo/v4"
 )
 
-func Routes(e *echo.Group, services *main.ServiceDependencies) {
-	ProcessRoute(e)
-	handlers.UseProcessRoute(e.Group("/auth"), opts)
+func Routes(e *echo.Group, services *setup.ServiceDependencies) {
+	handlers.UseProcessRoutes(e.Group("/data"), services)
 }

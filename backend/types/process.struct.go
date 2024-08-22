@@ -47,6 +47,20 @@ type ProcessFilter struct {
 	Offset int
 }
 
+type DashboardCounts struct {
+	TotalUsers     int `json:"total_users" bun:"total_users"`
+	TotalProcesses int `json:"total_processes" bun:"total_processes"`
+}
+
+type RealTimeData struct {
+	Processes ProcessList         `json:"processes"`
+	Report    []ProcessUserReport `json:"report"`
+}
+
 type ProcessRepository interface {
 	GetProcesses(ctx context.Context, filter ProcessFilter) ([]Process, int, error)
+	GetProcessReport(ctx context.Context) ([]ProcessUserReport, error)
+	InsertProcesses(ctx context.Context, processes []Process) error
+	GetUsers(ctx context.Context) ([]string, error)
+	GetCounts(ctx context.Context) (DashboardCounts, error)
 }
