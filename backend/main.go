@@ -5,12 +5,13 @@ import (
 	"log"
 	"net/http"
 
-	"binalyze-test/configs"
 	"binalyze-test/routes"
+	"binalyze-test/setup"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -20,7 +21,15 @@ func main() {
 		log.Print(_err)
 	}
 
-	configs.ConnectDb()
+	// configs.ConnectDb()
+
+	logger := logrus.New()
+
+	services, err := setup.ConfigureServiceDependencies(logger)
+	if err != nil {
+		logger.Println("failed to setup service dependencies")
+		panic(err)
+	}
 
 	e := echo.New()
 
@@ -35,9 +44,9 @@ func main() {
 
 	group := e.Group("/api/v1")
 
-	routes.Routes(group)
+	routes.Routes(group, services)
 
-	go RunSchedule()
+	go RunSchedule(services)
 
 	port := fmt.Sprintf(":%s", "1323")
 

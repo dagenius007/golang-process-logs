@@ -60,7 +60,7 @@ type RealTimeData struct {
 type ProcessRepository interface {
 	GetProcesses(ctx context.Context, filter ProcessFilter) ([]Process, int, error)
 	GetProcessReport(ctx context.Context) ([]ProcessUserReport, error)
-	InsertProcesses(ctx context.Context, processes []Process) error
+	InsertProcesses(ctx context.Context, processes []*Process) error
 	GetUsers(ctx context.Context) ([]string, error)
 	GetCounts(ctx context.Context) (DashboardCounts, error)
 }

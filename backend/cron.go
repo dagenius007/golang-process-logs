@@ -1,14 +1,13 @@
 package main
 
 import (
-	"context"
-
 	"binalyze-test/setup"
+	"context"
 
 	"github.com/robfig/cron/v3"
 )
 
-func RunSchedule(services setup.ServiceDependencies) {
+func RunSchedule(services *setup.ServiceDependencies) {
 	ctx := context.Background()
 	s := cron.New()
 

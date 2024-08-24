@@ -49,7 +49,7 @@ func (p ProcessRepository) GetProcesses(ctx context.Context, filter types.Proces
 	return processes, count, nil
 }
 
-func (p ProcessRepository) InsertProcesses(ctx context.Context, processes []types.Process) error {
+func (p ProcessRepository) InsertProcesses(ctx context.Context, processes []*types.Process) error {
 	if _, err := p.DB.NewInsert().
 		Model(&processes).
 		On("CONFLICT (id, pid) DO UPDATE").

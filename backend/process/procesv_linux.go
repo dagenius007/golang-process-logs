@@ -1,11 +1,11 @@
 // go:build linux
+// go:build linux
 //go:build linux
 // +build linux
 
 package process
 
 import (
-	"binalyze-test/utils"
 	"bufio"
 	"bytes"
 	"fmt"
@@ -16,6 +16,8 @@ import (
 	"os/user"
 	"strconv"
 	"strings"
+
+	"binalyze-test/utils"
 
 	. "binalyze-test/types"
 )
@@ -39,6 +41,48 @@ func init() {
 			clkTick = val
 		}
 	}
+}
+
+func getPids() ([]int32, error) {
+	pidSlice := make([]int32, 0)
+
+	d, err := os.Open("/proc")
+	if err != nil {
+		return pidSlice, nil
+	}
+	defer d.Close()
+
+	for {
+		names, err := d.Readdirnames(100)
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		for _, name := range names {
+
+			// Prcoes names start with numbers
+			if name[0] < '0' || name[0] > '9' {
+				continue
+			}
+
+			pid, err := strconv.Atoi(name)
+			// Assumption that process does not exist
+			if err != nil {
+				continue
+			}
+
+			pidSlice = append(pidSlice, int32(pid))
+		}
+	}
+
+	log.Println("Linux pids fetched successfully")
+
+	return pidSlice, nil
 }
 
 func getUserName(pid int32) (string, error) {
@@ -172,54 +216,12 @@ func calcMemoryUsage(rss float64) (float64, error) {
 	return memoryUsage, nil
 }
 
-func getPids() ([]int32, error) {
-	pidSlice := make([]int32, 0)
-
-	d, err := os.Open("/proc")
-	if err != nil {
-		return pidSlice, nil
-	}
-	defer d.Close()
-
-	for {
-		names, err := d.Readdirnames(100)
-
-		if err == io.EOF {
-			break
-		}
-
-		if err != nil {
-			return nil, err
-		}
-
-		for _, name := range names {
-
-			// Prcoes names start with numbers
-			if name[0] < '0' || name[0] > '9' {
-				continue
-			}
-
-			pid, err := strconv.Atoi(name)
-			// Assumption that process does not exist
-			if err != nil {
-				continue
-			}
-
-			pidSlice = append(pidSlice, int32(pid))
-		}
-	}
-
-	log.Println("Linux pids fetched successfully")
-
-	return pidSlice, nil
-}
-
-func statInfo(p *Process, pid int32) (*Process, error) {
+func statInfo(p *Process, pid int32) error {
 	statPath := fmt.Sprintf("/proc/%d/stat", pid)
 
 	contents, err := os.ReadFile(statPath)
 	if err != nil {
-		return nil, nil
+		return nil
 	}
 
 	nameStart := bytes.IndexByte(contents, '(') + 1
@@ -235,7 +237,7 @@ func statInfo(p *Process, pid int32) (*Process, error) {
 
 	username, err := getUserName(pid)
 	if err != nil {
-		return p, err
+		return err
 	}
 
 	p.User = username
@@ -243,50 +245,50 @@ func statInfo(p *Process, pid int32) (*Process, error) {
 	// time a programm used in user mode in seconds
 	uTime, err := strconv.ParseFloat(stats[11], 64)
 	if err != nil {
-		return p, err
+		return err
 	}
 
 	// time a programm used in kernel mode in seconds
 	sTime, err := strconv.ParseFloat(stats[12], 64)
 	if err != nil {
-		return p, err
+		return err
 	}
 
 	cuTime, err := strconv.ParseFloat(stats[13], 64)
 	if err != nil {
-		return p, err
+		return err
 	}
 
 	// Process start time since system booted
 	pStartTime, err := strconv.ParseFloat(stats[19], 64)
 	if err != nil {
-		return p, err
+		return err
 	}
 	totalCpuTime := uTime + sTime + cuTime
 	cpuUsage, err := calcCpuUsage(totalCpuTime, pStartTime)
 	if err != nil {
-		return p, err
+		return err
 	}
 
 	p.CpuUsage = utils.FormatTo2Decimal(cpuUsage)
 
 	residentMemorySize, err := strconv.ParseUint(stats[21], 10, 64)
 	if err != nil {
-		return p, err
+		return err
 	}
 
 	p.ResidentMemorySize = int64(residentMemorySize / 1000)
 
 	memoryUsage, err := calcMemoryUsage(float64(residentMemorySize))
 	if err != nil {
-		return p, err
+		return err
 	}
 
 	p.MemoryUsage = utils.FormatTo2Decimal(memoryUsage)
 
 	virtualMemorySize, err := strconv.ParseUint(stats[20], 10, 64)
 	if err != nil {
-		return p, err
+		return err
 	}
 	p.VirtualMemorySize = int64(virtualMemorySize / 1000)
 
@@ -300,10 +302,10 @@ func statInfo(p *Process, pid int32) (*Process, error) {
 
 	priority, err := strconv.Atoi(stats[16])
 	if err != nil {
-		return p, err
+		return err
 	}
 
 	p.Priority = guagePriority(priority)
 
-	return p, nil
+	return nil
 }

@@ -11,8 +11,6 @@ import (
 	"binalyze-test/types"
 	"binalyze-test/utils"
 
-	// . "binalyze-test/types"
-
 	"golang.org/x/sys/unix"
 )
 
