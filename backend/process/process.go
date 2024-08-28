@@ -4,7 +4,7 @@ import (
 	"log"
 	"strings"
 
-	"binalyze-test/types"
+	"process-logs/types"
 )
 
 type InternalProcess struct {

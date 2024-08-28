@@ -1,4 +1,4 @@
-module binalyze-test
+module process-logs
 
 go 1.20
 

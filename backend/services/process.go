@@ -3,8 +3,8 @@ package services
 import (
 	"context"
 
-	"binalyze-test/process"
-	"binalyze-test/types"
+	"process-logs/process"
+	"process-logs/types"
 
 	"github.com/sirupsen/logrus"
 )

@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"binalyze-test/setup"
+	"process-logs/setup"
 
 	"github.com/robfig/cron/v3"
 )

@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"binalyze-test/types"
-	"binalyze-test/utils"
+	"process-logs/types"
+	"process-logs/utils"
 
 	"golang.org/x/sys/unix"
 )

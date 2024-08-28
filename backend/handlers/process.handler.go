@@ -8,10 +8,10 @@ import (
 	"syscall"
 	"time"
 
-	"binalyze-test/utils"
+	"process-logs/utils"
 
-	"binalyze-test/setup"
-	"binalyze-test/types"
+	"process-logs/setup"
+	"process-logs/types"
 
 	"github.com/labstack/echo/v4"
 	"golang.org/x/net/websocket"

@@ -3,7 +3,7 @@ package utils
 import (
 	"math"
 
-	"binalyze-test/types"
+	"process-logs/types"
 
 	"github.com/labstack/echo/v4"
 )

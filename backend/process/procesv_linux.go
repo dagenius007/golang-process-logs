@@ -17,9 +17,8 @@ import (
 	"strconv"
 	"strings"
 
-	"binalyze-test/utils"
-
-	. "binalyze-test/types"
+	"process-logs/types"
+	"process-logs/utils"
 )
 
 type Memory struct {
@@ -216,7 +215,7 @@ func calcMemoryUsage(rss float64) (float64, error) {
 	return memoryUsage, nil
 }
 
-func statInfo(p *Process, pid int32) error {
+func statInfo(p *types.Process, pid int32) error {
 	statPath := fmt.Sprintf("/proc/%d/stat", pid)
 
 	contents, err := os.ReadFile(statPath)

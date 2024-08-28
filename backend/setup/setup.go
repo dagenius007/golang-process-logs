@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"os"
 
-	"binalyze-test/repository"
-	"binalyze-test/services"
+	"process-logs/repository"
+	"process-logs/services"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"

@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"binalyze-test/routes"
-	"binalyze-test/setup"
+	"process-logs/routes"
+	"process-logs/setup"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"

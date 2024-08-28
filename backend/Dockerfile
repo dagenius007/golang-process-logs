@@ -33,4 +33,4 @@ COPY --from=builder /tmp/app ./
 
 EXPOSE 1323
 
-CMD [ "./binalyze-test" ]
+CMD [ "./process-logs" ]

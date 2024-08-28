@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"binalyze-test/types"
+	"process-logs/types"
 
 	"github.com/sirupsen/logrus"
 	"github.com/uptrace/bun"

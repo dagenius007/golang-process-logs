@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	mock "binalyze-test/mocks"
-	"binalyze-test/types"
+	mock "process-logs/mocks"
+	"process-logs/types"
 
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"

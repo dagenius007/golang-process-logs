@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"binalyze-test/handlers"
-	"binalyze-test/setup"
+	"process-logs/handlers"
+	"process-logs/setup"
 
 	"github.com/labstack/echo/v4"
 )

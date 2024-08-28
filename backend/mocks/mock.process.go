@@ -5,7 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"binalyze-test/types"
+	"process-logs/types"
 )
 
 type (
