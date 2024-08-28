@@ -86,7 +86,7 @@ frontend/
 
 - Add more test coverage
 - Get processes on windows PC
-- Get data on instant load not on load of first data
+- Get full command as -comm limits to 16 characters
 
 ### References
 

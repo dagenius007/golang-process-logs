@@ -187,6 +187,7 @@ const useProcessStore = defineStore('process', () => {
         const data = handleWebsocketMessage(event.data)
 
         if (data.process_data && data.process_data.processes.length > 0) {
+          console.log('UV ', data.process_data.processes)
           processes.value = data.process_data.processes
           totalCount.value = data.process_data.total
         }

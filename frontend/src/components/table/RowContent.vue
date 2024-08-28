@@ -65,5 +65,6 @@ watchEffect(async () => {
   display: flex;
   align-items: center;
   color: white;
+  text-transform: capitalize;
 }
 </style>
