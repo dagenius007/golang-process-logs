@@ -1,5 +1,7 @@
 # Processes Monitor
 
+![](https://github.com/dagenius007/golang-process-logs/blob/main/ProcessLogs.gif)
+
 ## Overview
 
 This project gets all the running processes on your PC and updates the frontend in real time.
