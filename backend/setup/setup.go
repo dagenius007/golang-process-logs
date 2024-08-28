@@ -1,6 +1,7 @@
 package setup
 
 import (
+	"context"
 	"database/sql"
 	"os"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/sqlitedialect"
+	"github.com/uptrace/bun/extra/bundebug"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -40,10 +42,19 @@ func ConfigureServiceDependencies(logger *logrus.Logger) (*ServiceDependencies, 
 		return nil, err
 	}
 
+	// service.DB.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
+
+	service.DB.AddQueryHook(bundebug.NewQueryHook())
+
 	processRepo := repository.NewRepository(logger, service.DB)
 
 	service.ProcessService = services.NewProcessService(logger, processRepo)
 
+	// Prepopulate DB on load
+
+	ctx := context.Background()
+
+	service.ProcessService.FetchAndInsertProcess(ctx)
 	return service, nil
 }
 
@@ -66,7 +77,7 @@ func connectDb() (*bun.DB, error) {
 }
 
 func createDBFile() error {
-	// Create new sql file if file deos not exist
+	// Create new sql file
 
 	_, err := os.Stat(Path)
 

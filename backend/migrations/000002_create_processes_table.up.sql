@@ -1,19 +1,19 @@
 
 CREATE TABLE IF NOT EXISTS processes (
-    id INTEGER NOT NULL PRIMARY KEY,
+    id integer not null primary key autoincrement,
     user text,
-    pid integer NOT NULL UNIQUE,
-    cpuUsage integer,
-    memoryUsage integer,
-    residentMemorySize integer,
-    virtualMemorySize integer,
+    pid integer not null UNIQUE,
+    cpu_usage decimal(10,2),
+    memory_usage decimal(10,2),
+    resident_memory_size integer,
+    virtual_memory_size integer,
     state text,
-    totalTime text,
-    cpuTime text,
+    total_time text,
+    cpu_time text,
     command text,
     priority text,
-    createdAt timestamp,
-    updatedAt timestamp
+    created_at timestamp,
+    updated_at timestamp
 );
 
 CREATE INDEX idx_user ON processes (user);

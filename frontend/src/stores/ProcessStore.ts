@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import api from '@/internals/api'
-import { isHttps } from '@/utils/helper'
+import { isHttps, stripHttp } from '@/utils/helper'
 
 interface IProcess {
   key: number
@@ -37,8 +37,13 @@ interface ISeries {
 
 const handleWebsocketMessage = (data: string) => {
   let _data = {
-    processes: [],
-    reports: []
+    process_data: {
+      processes: [],
+      total: 0,
+      limit: 10,
+      page: 1
+    },
+    report: []
   }
   if (data) {
     try {
@@ -76,15 +81,15 @@ const createSerisAndOptions = (data: any) => {
           xAxixs.push(value[key])
         }
 
-        if (key === 'totalCpuUsage') {
+        if (key === 'total_cpu_usage') {
           series[0].data.push(value[key])
         }
 
-        if (key === 'totalMemoryUsage') {
+        if (key === 'total_memory_usage') {
           series[1].data.push(value[key])
         }
 
-        if (key === 'totalProcesses') {
+        if (key === 'total_processes') {
           series[2].data.push(value[key])
         }
       })
@@ -156,7 +161,6 @@ const useProcessStore = defineStore('process', () => {
   async function fetchProcesses(params: Record<string, string | number>, limit = 10, page = 1) {
     try {
       //build query
-
       let query = `limit=${limit}&page=${page}`
 
       Object.keys(params).forEach((key: string) => {
@@ -167,7 +171,7 @@ const useProcessStore = defineStore('process', () => {
       })
       const {
         data: { data }
-      } = await api.get(`/data?${query}`)
+      } = await api.get(`/process?${query}`)
 
       processes.value = data.processes
 
@@ -175,16 +179,20 @@ const useProcessStore = defineStore('process', () => {
 
       const apiHost = import.meta.env.VITE_API_HOST
 
-      const socket = new WebSocket(`${isHttps() ? 'wss:' : 'ws:'}//${apiHost}/ws?${query}`)
+      const socket = new WebSocket(
+        `${isHttps() ? 'wss:' : 'ws:'}//${stripHttp(apiHost)}/process/ws?${query}`
+      )
 
       socket.onmessage = (event: MessageEvent) => {
-        const _data = handleWebsocketMessage(event.data)
-        if (_data.processes.length > 0) {
-          processes.value = _data.processes
+        const data = handleWebsocketMessage(event.data)
+
+        if (data.process_data && data.process_data.processes.length > 0) {
+          processes.value = data.process_data.processes
+          totalCount.value = data.process_data.total
         }
 
-        if (_data.processes.length > 0) {
-          const { series: _series, xAxixs } = createSerisAndOptions(_data.reports)
+        if (data.report.length > 0) {
+          const { series: _series, xAxixs } = createSerisAndOptions(data.report)
 
           options.value = {
             ...options.value,
@@ -205,7 +213,7 @@ const useProcessStore = defineStore('process', () => {
     try {
       const {
         data: { data }
-      } = await api.get(`/users`)
+      } = await api.get(`/process/users`)
 
       userOptions.value = data.map((_data: string) => ({ label: _data, value: _data }))
     } catch (e) {
@@ -217,14 +225,14 @@ const useProcessStore = defineStore('process', () => {
     try {
       const {
         data: { data }
-      } = await api.get(`/counts`)
+      } = await api.get(`/process/counts`)
 
       Object.keys(data).map((key: string) => {
         switch (true) {
-          case key == 'processCount':
+          case key == 'total_processes':
             processInfo.value.push({ title: 'Total process', value: data[key].toString() })
             break
-          case key == 'usersCount':
+          case key == 'total_users':
             processInfo.value.push({ title: 'Total users', value: data[key].toString() })
             break
         }
@@ -238,7 +246,7 @@ const useProcessStore = defineStore('process', () => {
     try {
       const {
         data: { data }
-      } = await api.get(`/reports`)
+      } = await api.get(`/process/reports`)
 
       const { series: _series, xAxixs } = createSerisAndOptions(data)
 

@@ -24,24 +24,20 @@ func NewRepository(logger *logrus.Logger, DB *bun.DB) *ProcessRepository {
 func (p ProcessRepository) GetProcesses(ctx context.Context, filter types.ProcessFilter) ([]types.Process, int, error) {
 	processes := []types.Process{}
 
-	q := p.DB.NewSelect().Model(&processes)
-
+	q := p.DB.NewSelect().Column("id", "user", "pid").ColumnExpr("CAST(cpu_usage AS REAL) AS cpu_usage").ColumnExpr("CAST(memory_usage AS REAL) AS memory_usage").Column("resident_memory_size", "virtual_memory_size", "state", "total_time", "cpu_time", "command", "priority", "created_at", "updated_at").Model(&processes)
 	if filter.State != "" {
 		q = q.Where("state = ?", filter.State)
 	}
-
 	if filter.User != "" {
 		q = q.Where("user = ?", filter.State)
 	}
-
 	if filter.Search != "" {
 		// name LIKE
 		q = q.WhereGroup("AND", func(sq *bun.SelectQuery) *bun.SelectQuery {
 			return sq.WhereOr("user LIKE", "%"+filter.Search+"%").WhereOr("command LIKE", "%"+filter.Search+"%")
 		})
 	}
-
-	count, err := q.ScanAndCount(ctx)
+	count, err := q.Limit(filter.Limit).Offset(filter.Offset).Order("cpu_usage DESC").Order("memory_usage DESC").ScanAndCount(ctx)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -52,7 +48,7 @@ func (p ProcessRepository) GetProcesses(ctx context.Context, filter types.Proces
 func (p ProcessRepository) InsertProcesses(ctx context.Context, processes []*types.Process) error {
 	if _, err := p.DB.NewInsert().
 		Model(&processes).
-		On("CONFLICT (id, pid) DO UPDATE").
+		On("CONFLICT (pid) DO UPDATE").
 		Set("cpu_usage = EXCLUDED.cpu_usage").
 		Set("memory_usage = EXCLUDED.memory_usage").
 		Set("resident_memory_size = EXCLUDED.resident_memory_size").
@@ -73,7 +69,7 @@ func (p ProcessRepository) InsertProcesses(ctx context.Context, processes []*typ
 func (p ProcessRepository) GetProcessReport(ctx context.Context) ([]types.ProcessUserReport, error) {
 	processesReport := []types.ProcessUserReport{}
 
-	if err := p.DB.NewRaw("SELECT user, ROUND(SUM(cpuUsage),2) AS totalCpuUsage, ROUND(SUM(memoryUsage),2) AS totalMemoryUsage , COUNT(pid) as totalProcesses FROM ? GROUP BY user ORDER BY COUNT(pid) DESC", bun.Ident("processes")).Scan(ctx, &processesReport); err != nil {
+	if err := p.DB.NewRaw("SELECT user, ROUND(SUM(cpu_usage),2) AS total_cpu_usage, ROUND(SUM(memory_usage),2) AS total_memory_usage , COUNT(pid) as total_processes FROM ? GROUP BY user ORDER BY COUNT(pid) DESC", bun.Ident("processes")).Scan(ctx, &processesReport); err != nil {
 		return processesReport, err
 	}
 
@@ -84,7 +80,7 @@ func (p ProcessRepository) GetUsers(ctx context.Context) ([]string, error) {
 	users := make([]string, 0)
 
 	// "SELECT user FROM processes GROUP BY user"
-	if err := p.DB.NewSelect().Model(((*types.Process)(nil))).Column("user").Group("user").Scan(ctx, users); err != nil {
+	if err := p.DB.NewSelect().Model(((*types.Process)(nil))).Column("user").Group("user").Scan(ctx, &users); err != nil {
 		return nil, err
 	}
 
@@ -95,7 +91,7 @@ func (p ProcessRepository) GetCounts(ctx context.Context) (types.DashboardCounts
 	counts := types.DashboardCounts{}
 
 	// "SELECT user FROM processes GROUP BY user"
-	if err := p.DB.NewRaw("SELECT COUNT(user) as total_users , COUNT(pid) as total_processes FROM processes GROUP BY user , pid").Scan(ctx, counts); err != nil {
+	if err := p.DB.NewRaw("SELECT COUNT(DISTINCT user) as total_users , COUNT(DISTINCT pid) as total_processes FROM processes").Scan(ctx, &counts); err != nil {
 		return counts, err
 	}
 

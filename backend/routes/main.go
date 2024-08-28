@@ -8,5 +8,5 @@ import (
 )
 
 func Routes(e *echo.Group, services *setup.ServiceDependencies) {
-	handlers.UseProcessRoutes(e.Group("/data"), services)
+	handlers.UseProcessRoutes(e.Group("/process"), services)
 }

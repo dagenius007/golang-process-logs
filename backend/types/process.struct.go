@@ -9,7 +9,7 @@ import (
 
 type Process struct {
 	bun.BaseModel      `bun:"table:processes"`
-	Id                 int       `json:"id" bun:"id"`
+	Id                 int       `json:"id" bun:"id,pk,autoincrement"`
 	User               string    `json:"user" bun:"user"`
 	PID                int32     `json:"pid" bun:"pid"`
 	CpuUsage           float64   `json:"cpu_usage" bun:"cpu_usage"`
@@ -25,11 +25,25 @@ type Process struct {
 	UpdatedAt          time.Time `json:"updated_at" bun:"updated_at"`
 }
 
+var _ bun.BeforeAppendModelHook = (*Process)(nil)
+
+func (process *Process) BeforeAppendModel(ctx context.Context, query bun.Query) error {
+	switch query.(type) {
+	case *bun.InsertQuery:
+		// Hash password
+		process.CreatedAt = time.Now()
+		process.UpdatedAt = time.Now()
+	case *bun.UpdateQuery:
+		process.UpdatedAt = time.Now()
+	}
+	return nil
+}
+
 type ProcessUserReport struct {
 	User             string  `json:"user"`
-	TotalCpuUsage    float64 `json:"totalCpuUsage"`
-	TotalMemoryUsage float64 `json:"totalMemoryUsage"`
-	TotalProcesses   int64   `json:"totalProcesses"`
+	TotalCpuUsage    float64 `json:"total_cpu_usage"`
+	TotalMemoryUsage float64 `json:"total_memory_usage"`
+	TotalProcesses   int64   `json:"total_processes"`
 }
 
 type ProcessList struct {
@@ -53,7 +67,7 @@ type DashboardCounts struct {
 }
 
 type RealTimeData struct {
-	Processes ProcessList         `json:"processes"`
+	Processes ProcessList         `json:"process_data"`
 	Report    []ProcessUserReport `json:"report"`
 }
 

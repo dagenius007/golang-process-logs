@@ -26,6 +26,10 @@ func (p ProcessService) FetchAndInsertProcess(ctx context.Context) {
 
 	processes := process.GetProcesses()
 
+	// v, _ := json.Marshal(processes)
+
+	// fmt.Println("post", string(v))
+
 	err := p.repo.InsertProcesses(ctx, processes)
 	if err != nil {
 		useLogger.Error(err)

@@ -19,6 +19,8 @@ store.fetchProcessInfo()
 
 const { processes, totalCount, stateOptions, userOptions, processInfo } = storeToRefs(store)
 
+console.log('processes', processes)
+
 const columns = ref([
   {
     header: 'PID',
@@ -35,19 +37,19 @@ const columns = ref([
   },
   {
     header: 'CPU(%)',
-    accessor: 'cpuUsage'
+    accessor: 'cpu_usage'
   },
   {
     header: 'Memory(%)',
-    accessor: 'memoryUsage'
+    accessor: 'memory_usage'
   },
   {
     header: 'Resident Memory Size(MB)',
-    accessor: 'residentMemorySize'
+    accessor: 'resident_memorySize'
   },
   {
     header: 'Virtual Memory Size(MB)',
-    accessor: 'virtualMemorySize'
+    accessor: 'virtual_memory_size'
   },
   {
     header: 'State',
@@ -61,11 +63,11 @@ const columns = ref([
   },
   {
     header: 'Process Time',
-    accessor: 'totalTime'
+    accessor: 'total_time'
   },
   {
     header: 'CPU Time',
-    accessor: 'cpuTime'
+    accessor: 'cpu_time'
   }
 ])
 

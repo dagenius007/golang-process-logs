@@ -16,6 +16,7 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/fatih/color v1.16.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang-migrate/migrate v3.5.4+incompatible // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -36,6 +37,7 @@ require (
 	github.com/uptrace/bun v1.2.1 // indirect
 	github.com/uptrace/bun/dialect/sqlitedialect v1.2.1 // indirect
 	github.com/uptrace/bun/driver/sqliteshim v1.2.1 // indirect
+	github.com/uptrace/bun/extra/bundebug v1.2.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect

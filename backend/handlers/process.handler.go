@@ -23,11 +23,11 @@ type ProcessHandler struct {
 
 func UseProcessRoutes(routes *echo.Group, services *setup.ServiceDependencies) {
 	p := ProcessHandler{services: services}
-	routes.GET("/processes", p.getProcesses)
+	routes.GET("", p.getProcesses)
 	routes.GET("/users", p.getProcessUsers)
 	routes.GET("/counts", p.getDashboardCounts)
 	routes.GET("/reports", p.getProcessReport)
-	// routes.GET("/ws", p.getProcessRealTime)
+	routes.GET("/ws", p.getProcessRealTime)
 }
 
 func (p ProcessHandler) getProcesses(c echo.Context) error {
@@ -99,14 +99,37 @@ func (p ProcessHandler) getProcessRealTime(c echo.Context) error {
 	websocket.Handler(func(ws *websocket.Conn) {
 		defer ws.Close()
 		for {
-			// Write
+			page, limit := 1, 10
 
-			processList, err := p.services.ProcessService.GetProcesses(ctx, types.ProcessFilter{})
+			if val, err := strconv.Atoi(c.QueryParam("page")); err == nil {
+				page = val
+			}
+
+			if val, err := strconv.Atoi(c.QueryParam("limit")); err == nil {
+				limit = val
+			}
+
+			offset := (page - 1) * limit
+
+			processList, err := p.services.ProcessService.GetProcesses(ctx, types.ProcessFilter{
+				State:  c.QueryParam("state"),
+				User:   c.QueryParam("user"),
+				Search: c.QueryParam("search"),
+				Limit:  limit,
+				Offset: offset,
+			})
+
+			processList.Limit = limit
+			processList.Page = page
+
 			if err != nil {
+				c.Logger().Error(err)
+				return
 			}
 
 			report, err := p.services.ProcessService.GetProcessReport(ctx)
 			if err != nil {
+				c.Logger().Error(err)
 			}
 
 			data := types.RealTimeData{
@@ -121,7 +144,7 @@ func (p ProcessHandler) getProcessRealTime(c echo.Context) error {
 
 			msg := string(response)
 
-			time.Sleep(1 * time.Minute)
+			time.Sleep(5 * time.Second)
 
 			err = websocket.Message.Send(ws, msg)
 			if err != nil {

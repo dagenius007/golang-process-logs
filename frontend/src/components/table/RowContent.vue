@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watchEffect, ref, reactive } from 'vue'
+import { watchEffect, ref } from 'vue'
 
 const statusMapping: Record<string, string> = {
   running: '#60CA57',
