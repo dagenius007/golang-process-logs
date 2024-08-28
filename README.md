@@ -1,4 +1,4 @@
-# Processes Monitor
+# Process Monitor
 
 ![](https://github.com/dagenius007/golang-process-logs/blob/main/ProcessLogs.gif)
 
